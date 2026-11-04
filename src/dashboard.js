@@ -1,0 +1,63 @@
+// Numbers and labels for the page, computed from the data. No DOM in this file.
+// A plain script: it works in a browser (global `Dashboard`) and in Node (`require`).
+(function (root, factory) {
+  const api = factory(typeof module === 'object' && module.exports ? require('./scoring.js') : root.Scoring);
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  } else {
+    root.Dashboard = api;
+  }
+})(typeof self !== 'undefined' ? self : globalThis, function (Scoring) {
+  const STAGES = ['New', 'Contacted', 'Consultation booked', 'Proposal sent', 'Won', 'Lost'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const MAX_REASONS = 3;
+
+  // The four numbers at the top of the board.
+  function kpis(leads, asOf) {
+    const open = leads.filter(Scoring.isOpen);
+    return {
+      open: open.length,
+      newToday: open.filter((l) => Scoring.hoursSince(l.created_at, asOf) < 24).length,
+      overdue: open.filter((l) => Scoring.isOverdue(l, asOf)).length,
+      hot: open.filter((l) => Scoring.bandFor(Scoring.scoreLead(l, asOf)) === 'Hot').length,
+    };
+  }
+
+  // How many leads sit in each pipeline stage, in pipeline order.
+  function stageCounts(leads) {
+    return STAGES.map((stage) => ({ stage, count: leads.filter((l) => l.stage === stage).length }));
+  }
+
+  function ageLabel(hours) {
+    if (hours < 1) return 'under 1h';
+    return `${Math.floor(hours)}h`;
+  }
+
+  // Why a lead ranks where it does: its biggest score parts, largest first.
+  function reasons(lead, parts, asOf) {
+    const hours = Scoring.hoursSince(lead.last_contact_at, asOf);
+    const engagementLabel = lead.engagement === 'booked' ? 'Consultation booked' : 'Replied';
+    const all = [
+      { label: lead.source, points: parts.source },
+      { label: engagementLabel, points: parts.engagement },
+      { label: `Profile ${lead.completeness}%`, points: parts.completeness },
+      { label: `Untouched ${ageLabel(hours)}`, points: parts.urgency },
+    ];
+    return all
+      .map((r, order) => ({ ...r, order }))
+      .filter((r) => r.points > 0)
+      .sort((a, b) => b.points - a.points || a.order - b.order)
+      .slice(0, MAX_REASONS)
+      .map(({ label, points }) => ({ label, points }));
+  }
+
+  // "4 Nov 2026, 09:00 UTC", from the data's own timestamp.
+  function formatAsOf(timestamp) {
+    const d = new Date(timestamp);
+    const hh = String(d.getUTCHours()).padStart(2, '0');
+    const mm = String(d.getUTCMinutes()).padStart(2, '0');
+    return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
+  }
+
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, formatAsOf };
+});
