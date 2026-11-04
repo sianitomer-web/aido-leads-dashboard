@@ -21,11 +21,11 @@
 
 ## Where
 
-Browser only. Static site: HTML, CSS, JavaScript and one JSON data file. No backend, no build step, no external requests (no CDN, no web fonts), so it also runs from GitHub Pages. Desktop-first (1024px and up); must stay fully usable at 390px wide.
+Browser only. Static site: HTML, CSS, JavaScript and one data file. No backend, no build step, no external requests (no CDN, no web fonts). It must work both when `index.html` is opened straight from disk and when served from GitHub Pages, so scripts are plain (non-module) scripts and the data is loaded as a script, not fetched. Desktop-first (1024px and up); must stay fully usable at 390px wide.
 
 ## Data (mock)
 
-One file, `data/leads.json`, with an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible.
+One file, `data/leads.js`, which defines the dataset and an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible.
 
 Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked).
 
@@ -34,7 +34,7 @@ Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (R
 | Part | Points |
 |------|--------|
 | Source: Referral 30, Webinar 25, Google Search 20, Meta 15, Organic 10 | 0–30 |
-| Profile completeness: completeness × 0.25, rounded | 0–25 |
+| Profile completeness: completeness × 0.25, rounded half up | 0–25 |
 | Engagement: booked 25, replied 15, none 0 | 0–25 |
 | Urgency: untouched 48h or more 20, 24–48h 10, under 24h 0 | 0–20 |
 
@@ -61,7 +61,7 @@ Bands: **Hot** 70 and above, **Warm** 40 to 69, **Cool** below 40. Won and Lost 
 ## Rules that must hold everywhere
 
 - **Red is used only to mark Overdue.** Bands and stages use other colours.
-- Every figure on screen is computed from `leads.json`. Nothing is hard-coded.
+- Every figure on screen is computed from `data/leads.js`. Nothing is hard-coded.
 - Text contrast meets WCAG AA, and every control works from the keyboard.
 
 ## Done means
@@ -71,6 +71,6 @@ Bands: **Hot** 70 and above, **Warm** 40 to 69, **Cool** below 40. Won and Lost 
 3. A lead last contacted exactly 48:00h before `as_of` is Overdue; at 47:59h it is not. Won and Lost leads are never Overdue.
 4. The four top numbers always equal counts taken directly from the data file.
 5. The only red on the page is on Overdue markers. Removing Overdue leads from the data removes all red.
-6. Opening `index.html` triggers zero network requests.
+6. Opening `index.html` from disk shows the full dashboard, and the page makes zero requests to any other origin.
 7. At 390px width there is no horizontal scroll on the page.
 8. First paint with the full dataset takes under one second on a normal laptop.
