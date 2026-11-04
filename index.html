@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harbor Leads</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#queue">Skip to the priority queue</a>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <div>
+        <h1>Harbor Leads</h1>
+        <p class="tagline">Who to call first at <span id="company">the consultancy</span></p>
+      </div>
+      <p class="as-of">Board as of <time id="as-of">…</time></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2 class="sr-only">Today at a glance</h2>
+    <ul class="kpis">
+      <li class="kpi">
+        <span class="kpi-label">Open leads</span>
+        <strong id="kpi-open">–</strong>
+        <span class="kpi-note">not yet won or lost</span>
+      </li>
+      <li class="kpi">
+        <span class="kpi-label">New in 24h</span>
+        <strong id="kpi-new">–</strong>
+        <span class="kpi-note">enquiries since yesterday</span>
+      </li>
+      <li class="kpi kpi-overdue">
+        <span class="kpi-label">Overdue</span>
+        <strong id="kpi-overdue">–</strong>
+        <span class="kpi-note">no contact for 48h or more</span>
+      </li>
+      <li class="kpi">
+        <span class="kpi-label">Hot</span>
+        <strong id="kpi-hot">–</strong>
+        <span class="kpi-note">score 70 and above</span>
+      </li>
+    </ul>
+
+    <div class="layout">
+      <section id="queue" class="panel" aria-labelledby="queue-title">
+        <div class="panel-head">
+          <h2 id="queue-title">Priority queue</h2>
+          <p class="hint">Open leads, highest score first</p>
+        </div>
+        <table class="queue">
+          <caption class="sr-only">Open leads ranked by priority score</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="h-lead">Lead</th>
+              <th scope="col" class="h-stage">Stage</th>
+              <th scope="col" class="h-score">Score</th>
+              <th scope="col" class="h-age">Last contact</th>
+              <th scope="col" class="h-why">Why it ranks here</th>
+            </tr>
+          </thead>
+          <tbody id="queue-body"></tbody>
+        </table>
+      </section>
+
+      <aside class="side">
+        <section class="panel" aria-labelledby="pipeline-title">
+          <div class="panel-head">
+            <h2 id="pipeline-title">Pipeline</h2>
+            <p class="hint">Leads in each stage</p>
+          </div>
+          <ol id="pipeline" class="pipeline"></ol>
+        </section>
+
+        <section class="panel">
+          <details class="how">
+            <summary>How the score works</summary>
+            <ul>
+              <li><b>Source</b> up to 30: Referral 30, Webinar 25, Google Search 20, Meta 15, Organic 10</li>
+              <li><b>Profile</b> up to 25: share of the intake form answered</li>
+              <li><b>Engagement</b> up to 25: booked 25, replied 15, none 0</li>
+              <li><b>Urgency</b> up to 20: untouched 48h or more 20, 24 to 48h 10</li>
+            </ul>
+            <p>Hot is 70 and above, Warm 40 to 69, Cool below 40.</p>
+          </details>
+        </section>
+      </aside>
+    </div>
+
+    <p class="foot">Mock data: every lead is fictional. Rules are in SPEC.md.</p>
+  </main>
+
+  <script src="data/leads.js"></script>
+  <script src="src/scoring.js"></script>
+  <script src="src/dashboard.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
