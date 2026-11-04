@@ -302,6 +302,58 @@ main { padding-block: 20px 40px; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Filters ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  padding: 4px 16px 12px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.field-search { flex: 1 1 180px; }
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.field input,
+.field select,
+.clear {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--ink-soft);
+  border-radius: 6px;
+  padding: 6px 10px;
+  min-height: 34px;
+}
+.field select { max-width: 100%; }
+.clear {
+  cursor: pointer;
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.clear:hover { background: var(--bg); }
+.count {
+  margin: 0;
+  padding: 0 16px 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
 /* ---------- Pipeline ---------- */
 
 .pipeline {
@@ -399,4 +451,6 @@ main { padding-block: 20px 40px; }
   .c-why { grid-column: 1 / -1; grid-row: 3; }
   .row-overdue td:first-child { box-shadow: none; }
   .row-overdue { box-shadow: inset 4px 0 0 var(--overdue-edge); }
+  .empty-row { display: block; }
+  .field { flex: 1 1 140px; }
 }

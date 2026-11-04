@@ -72,3 +72,63 @@ test('age label shows hours since last contact', () => {
 test('as_of is formatted from the data, not from the real clock', () => {
   assert.equal(Dashboard.formatAsOf('2026-11-04T09:00:00Z'), '4 Nov 2026, 09:00 UTC');
 });
+
+// ---------- Filters and search (Done means 9) ----------
+
+const fullQueue = () => Scoring.buildQueue(data.leads, AS_OF);
+const ALL = { source: 'all', stage: 'all', band: 'all', country: 'all', query: '' };
+
+test('with no filters the whole queue is returned unchanged', () => {
+  const queue = fullQueue();
+  assert.deepEqual(Dashboard.filterQueue(queue, ALL), queue);
+});
+
+test('every lead shown matches all active filters, and none that match are missing', () => {
+  const queue = fullQueue();
+  const filters = { ...ALL, source: 'Meta', country: 'Canada' };
+  const shown = Dashboard.filterQueue(queue, filters);
+  const expected = queue.filter((q) => q.lead.source === 'Meta' && q.lead.country === 'Canada');
+  assert.ok(expected.length > 0, 'the data has Meta leads in Canada');
+  assert.deepEqual(shown.map((q) => q.lead.id), expected.map((q) => q.lead.id));
+
+  const byBand = Dashboard.filterQueue(queue, { ...ALL, band: 'Hot' });
+  assert.ok(byBand.length > 0 && byBand.every((q) => q.band === 'Hot'));
+  const byStage = Dashboard.filterQueue(queue, { ...ALL, stage: 'Proposal sent' });
+  assert.ok(byStage.length > 0 && byStage.every((q) => q.lead.stage === 'Proposal sent'));
+});
+
+test('a lead keeps its rank from the full queue when filtered', () => {
+  const queue = fullQueue();
+  const shown = Dashboard.filterQueue(queue, { ...ALL, source: 'Organic' });
+  for (const item of shown) {
+    assert.equal(item.rank, queue.findIndex((q) => q.lead.id === item.lead.id) + 1);
+  }
+  assert.ok(shown.some((item) => item.rank > shown.length), 'ranks are not renumbered');
+});
+
+test('search matches part of a name, ignoring case and surrounding spaces', () => {
+  const queue = fullQueue();
+  const target = queue[3].lead;
+  const piece = target.name.slice(2, 7).toUpperCase();
+  const found = Dashboard.filterQueue(queue, { ...ALL, query: `  ${piece} ` });
+  assert.ok(found.some((q) => q.lead.id === target.id));
+  assert.ok(found.every((q) => q.lead.name.toLowerCase().includes(piece.toLowerCase())));
+});
+
+test('filters do not change the top numbers', () => {
+  const before = Dashboard.kpis(data.leads, AS_OF);
+  Dashboard.filterQueue(fullQueue(), { ...ALL, source: 'Referral', query: 'zzz' });
+  assert.deepEqual(Dashboard.kpis(data.leads, AS_OF), before);
+});
+
+test('when nothing matches the result is an empty list', () => {
+  assert.deepEqual(Dashboard.filterQueue(fullQueue(), { ...ALL, query: 'no such person' }), []);
+});
+
+test('filter options list the real values, in a fixed order', () => {
+  const o = Dashboard.filterOptions();
+  assert.deepEqual(o.sources, ['Referral', 'Webinar', 'Google Search', 'Meta', 'Organic']);
+  assert.deepEqual(o.stages, ['New', 'Contacted', 'Consultation booked', 'Proposal sent']);
+  assert.deepEqual(o.bands, ['Hot', 'Warm', 'Cool']);
+  assert.deepEqual(o.countries, ['Canada', 'Australia']);
+});

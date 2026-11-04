@@ -34,18 +34,37 @@
     document.getElementById('kpi-hot').textContent = k.hot;
   }
 
+  const fullQueue = Scoring.buildQueue(data.leads, data.as_of);
+  const filters = { source: 'all', stage: 'all', band: 'all', country: 'all', query: '' };
+
   function renderQueue() {
     const body = document.getElementById('queue-body');
     body.textContent = '';
-    Scoring.buildQueue(data.leads, data.as_of).forEach((item, index) => {
-      const { lead, score, band, breakdown, overdue, hoursSinceContact } = item;
+    const shown = Dashboard.filterQueue(fullQueue, filters);
+
+    document.getElementById('count').textContent =
+      shown.length === fullQueue.length
+        ? `Showing all ${fullQueue.length} open leads`
+        : `Showing ${shown.length} of ${fullQueue.length} open leads`;
+
+    if (shown.length === 0) {
+      const row = el('tr', 'empty-row');
+      const td = el('td', 'empty', 'No leads match these filters.');
+      td.setAttribute('colspan', '5');
+      row.appendChild(td);
+      body.appendChild(row);
+      return;
+    }
+
+    shown.forEach((item) => {
+      const { lead, score, band, breakdown, overdue, hoursSinceContact, rank } = item;
       const row = el('tr', overdue ? 'row-overdue' : '');
 
       const who = el('div', 'who');
       who.appendChild(el('span', 'who-name', lead.name));
       who.appendChild(el('span', 'who-meta', `${lead.country} · ${lead.source}`));
       const leadWrap = el('div', 'lead-wrap');
-      leadWrap.appendChild(el('span', 'rank', String(index + 1)));
+      leadWrap.appendChild(el('span', 'rank', String(rank)));
       leadWrap.appendChild(who);
       const leadCell = cell('c-lead', leadWrap);
 
@@ -72,6 +91,46 @@
     });
   }
 
+  function fillSelect(id, label, values, key) {
+    const select = document.getElementById(id);
+    const all = el('option', '', `All ${label}`);
+    all.value = 'all';
+    select.appendChild(all);
+    values.forEach((value) => {
+      const option = el('option', '', value);
+      option.value = value;
+      select.appendChild(option);
+    });
+    select.addEventListener('change', () => {
+      filters[key] = select.value;
+      renderQueue();
+    });
+  }
+
+  function setupFilters() {
+    const options = Dashboard.filterOptions();
+    fillSelect('f-source', 'sources', options.sources, 'source');
+    fillSelect('f-stage', 'stages', options.stages, 'stage');
+    fillSelect('f-band', 'bands', options.bands, 'band');
+    fillSelect('f-country', 'countries', options.countries, 'country');
+
+    const query = document.getElementById('f-query');
+    query.addEventListener('input', () => {
+      filters.query = query.value;
+      renderQueue();
+    });
+
+    document.getElementById('f-clear').addEventListener('click', () => {
+      Object.assign(filters, { source: 'all', stage: 'all', band: 'all', country: 'all', query: '' });
+      query.value = '';
+      ['f-source', 'f-stage', 'f-band', 'f-country'].forEach((id) => {
+        document.getElementById(id).value = 'all';
+      });
+      renderQueue();
+      query.focus();
+    });
+  }
+
   function renderPipeline() {
     const list = document.getElementById('pipeline');
     list.textContent = '';
@@ -94,6 +153,7 @@
 
   renderHeader();
   renderKpis();
+  setupFilters();
   renderQueue();
   renderPipeline();
 })();

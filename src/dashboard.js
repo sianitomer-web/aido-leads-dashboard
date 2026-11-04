@@ -51,6 +51,32 @@
       .map(({ label, points }) => ({ label, points }));
   }
 
+  // The values each filter can take, in a fixed order.
+  function filterOptions() {
+    return {
+      sources: Object.keys(Scoring.SOURCE_POINTS),
+      stages: STAGES.filter((stage) => stage !== 'Won' && stage !== 'Lost'),
+      bands: ['Hot', 'Warm', 'Cool'],
+      countries: ['Canada', 'Australia'],
+    };
+  }
+
+  // Keeps the queue items that match every active filter. Ranks are not renumbered.
+  // A filter set to 'all' (or an empty search) is not active.
+  function filterQueue(queue, filters) {
+    const query = (filters.query || '').trim().toLowerCase();
+    return queue.filter((item) => {
+      const { lead, band } = item;
+      return (
+        (filters.source === 'all' || lead.source === filters.source) &&
+        (filters.stage === 'all' || lead.stage === filters.stage) &&
+        (filters.band === 'all' || band === filters.band) &&
+        (filters.country === 'all' || lead.country === filters.country) &&
+        (query === '' || lead.name.toLowerCase().includes(query))
+      );
+    });
+  }
+
   // "4 Nov 2026, 09:00 UTC", from the data's own timestamp.
   function formatAsOf(timestamp) {
     const d = new Date(timestamp);
@@ -59,5 +85,5 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, formatAsOf };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, filterOptions, filterQueue, formatAsOf };
 });

@@ -87,7 +87,8 @@
         b.score - a.score ||
         Date.parse(a.lead.last_contact_at) - Date.parse(b.lead.last_contact_at) ||
         String(a.lead.id).localeCompare(String(b.lead.id))
-      );
+      )
+      .map((item, index) => ({ ...item, rank: index + 1 }));
   }
 
   return {
