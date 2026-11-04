@@ -9,24 +9,44 @@
     root.Scoring = api;
   }
 })(typeof self !== 'undefined' ? self : globalThis, function () {
-  const SOURCE_POINTS = {
-    'Referral': 30,
-    'Webinar': 25,
-    'Google Search': 20,
-    'Meta': 15,
-    'Organic': 10,
+  // Every scoring rule lives here and nowhere else. Text on the page that
+  // states a rule is generated from this object (see Dashboard.scoreRules).
+  const RULES = {
+    sourcePoints: {
+      'Referral': 30,
+      'Webinar': 25,
+      'Google Search': 20,
+      'Meta': 15,
+      'Organic': 10,
+    },
+    engagementPoints: { booked: 25, replied: 15, none: 0 },
+    completenessWeight: 0.25,
+    urgencyPoints: { overdue: 20, warning: 10 },
+    overdueHours: 48,
+    warningHours: 24,
+    newHours: 24,
+    hotFrom: 70,
+    warmFrom: 40,
+    closedStages: ['Won', 'Lost'],
   };
 
-  const ENGAGEMENT_POINTS = { booked: 25, replied: 15, none: 0 };
+  // Largest possible points for each part, and for the whole score.
+  function maxPoints() {
+    return {
+      source: Math.max(...Object.values(RULES.sourcePoints)),
+      completeness: Math.round(100 * RULES.completenessWeight),
+      engagement: Math.max(...Object.values(RULES.engagementPoints)),
+      urgency: Math.max(...Object.values(RULES.urgencyPoints)),
+    };
+  }
 
-  const CLOSED_STAGES = ['Won', 'Lost'];
-  const OVERDUE_HOURS = 48;
-  const WARNING_HOURS = 24;
-  const HOT_FROM = 70;
-  const WARM_FROM = 40;
+  function maxScore() {
+    const max = maxPoints();
+    return max.source + max.completeness + max.engagement + max.urgency;
+  }
 
   function isOpen(lead) {
-    return !CLOSED_STAGES.includes(lead.stage);
+    return !RULES.closedStages.includes(lead.stage);
   }
 
   // Hours between the lead's last contact and `asOf`. Never reads the real clock.
@@ -35,13 +55,13 @@
   }
 
   function isOverdue(lead, asOf) {
-    return isOpen(lead) && hoursSince(lead.last_contact_at, asOf) >= OVERDUE_HOURS;
+    return isOpen(lead) && hoursSince(lead.last_contact_at, asOf) >= RULES.overdueHours;
   }
 
   function urgencyPoints(lead, asOf) {
     const hours = hoursSince(lead.last_contact_at, asOf);
-    if (hours >= OVERDUE_HOURS) return 20;
-    if (hours >= WARNING_HOURS) return 10;
+    if (hours >= RULES.overdueHours) return RULES.urgencyPoints.overdue;
+    if (hours >= RULES.warningHours) return RULES.urgencyPoints.warning;
     return 0;
   }
 
@@ -49,9 +69,9 @@
   function scoreBreakdown(lead, asOf) {
     if (!isOpen(lead)) return null;
     return {
-      source: SOURCE_POINTS[lead.source],
-      completeness: Math.round(lead.completeness * 0.25), // half up
-      engagement: ENGAGEMENT_POINTS[lead.engagement],
+      source: RULES.sourcePoints[lead.source],
+      completeness: Math.round(lead.completeness * RULES.completenessWeight), // half up
+      engagement: RULES.engagementPoints[lead.engagement],
       urgency: urgencyPoints(lead, asOf),
     };
   }
@@ -63,8 +83,8 @@
   }
 
   function bandFor(score) {
-    if (score >= HOT_FROM) return 'Hot';
-    if (score >= WARM_FROM) return 'Warm';
+    if (score >= RULES.hotFrom) return 'Hot';
+    if (score >= RULES.warmFrom) return 'Warm';
     return 'Cool';
   }
 
@@ -92,9 +112,11 @@
   }
 
   return {
-    SOURCE_POINTS,
-    ENGAGEMENT_POINTS,
-    OVERDUE_HOURS,
+    RULES,
+    SOURCE_POINTS: RULES.sourcePoints,
+    ENGAGEMENT_POINTS: RULES.engagementPoints,
+    maxPoints,
+    maxScore,
     isOpen,
     hoursSince,
     isOverdue,

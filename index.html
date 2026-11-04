@@ -31,17 +31,17 @@
       <li class="kpi">
         <span class="kpi-label">New in 24h</span>
         <strong id="kpi-new">–</strong>
-        <span class="kpi-note">enquiries since yesterday</span>
+        <span class="kpi-note" id="kpi-new-note"></span>
       </li>
       <li class="kpi kpi-overdue">
         <span class="kpi-label">Overdue</span>
         <strong id="kpi-overdue">–</strong>
-        <span class="kpi-note">no contact for 48h or more</span>
+        <span class="kpi-note" id="kpi-overdue-note"></span>
       </li>
       <li class="kpi">
         <span class="kpi-label">Hot</span>
         <strong id="kpi-hot">–</strong>
-        <span class="kpi-note">score 70 and above</span>
+        <span class="kpi-note" id="kpi-hot-note"></span>
       </li>
     </ul>
 
@@ -110,13 +110,7 @@
         <section class="panel">
           <details class="how">
             <summary>How the score works</summary>
-            <ul>
-              <li><b>Source</b> up to 30: Referral 30, Webinar 25, Google Search 20, Meta 15, Organic 10</li>
-              <li><b>Profile</b> up to 25: share of the intake form answered</li>
-              <li><b>Engagement</b> up to 25: booked 25, replied 15, none 0</li>
-              <li><b>Urgency</b> up to 20: untouched 48h or more 20, 24 to 48h 10</li>
-            </ul>
-            <p>Hot is 70 and above, Warm 40 to 69, Cool below 40.</p>
+            <ul id="how-rules"></ul>
           </details>
         </section>
       </aside>

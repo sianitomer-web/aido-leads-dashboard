@@ -212,3 +212,51 @@ test('sources are listed best share first, then by number of leads', () => {
     assert.ok(a.share > b.share || (a.share === b.share && a.leads >= b.leads), `${a.source} before ${b.source}`);
   }
 });
+
+// ---------- Scoring rules are defined once (Rules that must hold everywhere) ----------
+
+test('text that states the scoring rules is generated from the rules, so changing a rule changes the text', () => {
+  const rules = Scoring.RULES;
+  const original = rules.sourcePoints.Referral;
+  const originalHot = rules.hotFrom;
+  try {
+    rules.sourcePoints.Referral = 99;
+    rules.hotFrom = 83;
+    const text = Dashboard.scoreRules().join(' ');
+    assert.ok(text.includes('Referral 99'), 'source weights come from the rules');
+    assert.ok(text.includes('83'), 'band thresholds come from the rules');
+    assert.ok(Dashboard.kpiNotes().hot.includes('83'), 'the Hot note comes from the rules');
+  } finally {
+    rules.sourcePoints.Referral = original;
+    rules.hotFrom = originalHot;
+  }
+  assert.ok(Dashboard.scoreRules().join(' ').includes(`Referral ${original}`));
+});
+
+test('maximums shown in the breakdown come from the rules and add up to the top score', () => {
+  const max = Scoring.maxPoints();
+  assert.deepEqual(max, { source: 30, completeness: 25, engagement: 25, urgency: 20 });
+  assert.equal(Scoring.maxScore(), 100);
+  const lead = fullQueue()[0];
+  const rows = Dashboard.breakdownRows(lead.lead, lead.breakdown, AS_OF);
+  assert.deepEqual(rows.map((r) => r.max), [max.source, max.completeness, max.engagement, max.urgency]);
+});
+
+test('the note under each top number is generated from the rules', () => {
+  const notes = Dashboard.kpiNotes();
+  assert.equal(notes.newToday, 'created in the last 24h');
+  assert.equal(notes.overdue, 'no contact for 48h or more');
+  assert.equal(notes.hot, 'score 70 and above');
+});
+
+// ---------- Search ignores case and accents ----------
+
+test('search finds a name written with an accent when typed without it', () => {
+  const queue = fullQueue();
+  const withAccent = queue.filter((q) => /[^\u0000-\u007f]/.test(q.lead.name));
+  assert.ok(withAccent.length > 0, 'the data has a name with an accent');
+  const found = Dashboard.filterQueue(queue, { ...ALL, query: 'tomas' });
+  assert.ok(found.length >= withAccent.filter((q) => q.lead.name.startsWith('Tomás')).length);
+  assert.ok(found.every((q) => /tom[aá]s/i.test(q.lead.name)));
+  assert.ok(Dashboard.filterQueue(queue, { ...ALL, query: 'TOMÁS' }).length === found.length);
+});
