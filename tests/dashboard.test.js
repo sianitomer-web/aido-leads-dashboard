@@ -170,3 +170,45 @@ test('engagement note covers all three engagement values', () => {
   assert.equal(noteFor('replied'), 'Replied');
   assert.equal(noteFor('none'), 'No reply yet');
 });
+
+// ---------- Marketing panel: source quality (Done means 11) ----------
+
+test('for each source the lead count and the share that reached a consultation come from the data', () => {
+  const rows = Dashboard.sourceQuality(data.leads);
+  const reachedStages = ['Consultation booked', 'Proposal sent', 'Won'];
+  assert.deepEqual([...rows.map((r) => r.source)].sort(), Object.keys(Scoring.SOURCE_POINTS).sort());
+  for (const row of rows) {
+    const mine = data.leads.filter((l) => l.source === row.source);
+    const reached = mine.filter((l) => reachedStages.includes(l.stage)).length;
+    assert.equal(row.leads, mine.length, `${row.source} lead count`);
+    assert.equal(row.reached, reached, `${row.source} reached count`);
+    assert.equal(row.share, Math.round((reached / mine.length) * 100), `${row.source} share`);
+  }
+  assert.equal(rows.reduce((sum, r) => sum + r.leads, 0), data.leads.length, 'closed leads are counted too');
+});
+
+test('lost leads count in the total but never as having reached a consultation', () => {
+  const leads = [
+    { source: 'Meta', stage: 'Lost' },
+    { source: 'Meta', stage: 'Won' },
+    { source: 'Meta', stage: 'New' },
+    { source: 'Meta', stage: 'Proposal sent' },
+  ];
+  const meta = Dashboard.sourceQuality(leads).find((r) => r.source === 'Meta');
+  assert.deepEqual([meta.leads, meta.reached, meta.share], [4, 2, 50]);
+});
+
+test('a source with no leads shows zero and does not divide by zero', () => {
+  const rows = Dashboard.sourceQuality([{ source: 'Meta', stage: 'Won' }]);
+  const organic = rows.find((r) => r.source === 'Organic');
+  assert.deepEqual([organic.leads, organic.reached, organic.share], [0, 0, 0]);
+});
+
+test('sources are listed best share first, then by number of leads', () => {
+  const rows = Dashboard.sourceQuality(data.leads);
+  for (let i = 1; i < rows.length; i++) {
+    const a = rows[i - 1];
+    const b = rows[i];
+    assert.ok(a.share > b.share || (a.share === b.share && a.leads >= b.leads), `${a.source} before ${b.source}`);
+  }
+});

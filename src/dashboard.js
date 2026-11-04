@@ -51,6 +51,25 @@
       .map(({ label, points }) => ({ label, points }));
   }
 
+  // Per source: how many leads, and how many reached a consultation
+  // (stage Consultation booked, Proposal sent or Won). Closed leads are included.
+  const REACHED_STAGES = ['Consultation booked', 'Proposal sent', 'Won'];
+
+  function sourceQuality(leads) {
+    return Object.keys(Scoring.SOURCE_POINTS)
+      .map((source) => {
+        const mine = leads.filter((l) => l.source === source);
+        const reached = mine.filter((l) => REACHED_STAGES.includes(l.stage)).length;
+        return {
+          source,
+          leads: mine.length,
+          reached,
+          share: mine.length === 0 ? 0 : Math.round((reached / mine.length) * 100),
+        };
+      })
+      .sort((a, b) => b.share - a.share || b.leads - a.leads);
+  }
+
   // The four parts of one lead's score, each with its maximum and a plain-words note.
   function breakdownRows(lead, parts, asOf) {
     const hours = Scoring.hoursSince(lead.last_contact_at, asOf);
@@ -97,5 +116,5 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, filterOptions, filterQueue, formatAsOf };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, filterOptions, filterQueue, formatAsOf };
 });

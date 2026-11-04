@@ -194,9 +194,29 @@
     });
   }
 
+  function renderSources() {
+    const list = document.getElementById('sources');
+    list.textContent = '';
+    Dashboard.sourceQuality(data.leads).forEach((row) => {
+      const item = el('li', 'stage');
+      const head = el('div', 'stage-head');
+      head.appendChild(el('span', 'stage-name', row.source));
+      head.appendChild(el('b', 'stage-count', `${row.share}%`));
+      const track = el('div', 'bar');
+      const fill = el('div', 'bar-fill');
+      fill.style.width = `${row.share}%`;
+      track.appendChild(fill);
+      item.appendChild(head);
+      item.appendChild(track);
+      item.appendChild(el('span', 'source-note', `${row.reached} of ${row.leads} leads`));
+      list.appendChild(item);
+    });
+  }
+
   renderHeader();
   renderKpis();
   setupFilters();
   renderQueue();
   renderPipeline();
+  renderSources();
 })();
