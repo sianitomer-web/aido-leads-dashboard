@@ -51,9 +51,9 @@ Bands: **Hot** 70 and above, **Warm** 40 to 69, **Cool** below 40. Won and Lost 
 - As Maya, I see how many leads sit in each pipeline stage.
 
 **Should**
-- Filter the queue by source, stage, band and country; search by name.
-- Open a lead to see its score broken into the four parts.
-- Marketing panel: per source, number of leads and share that reached a booked consultation.
+- Filter the queue by source, stage, band and country, and search it by name. Filters narrow the queue only: the top four numbers and the pipeline do not change, and each lead keeps its rank from the full queue. If nothing matches, the page says so.
+- Open a lead to see its score broken into the four parts, each shown as points out of its maximum.
+- Marketing panel: for each source, the number of leads and the share that reached a consultation. "Reached a consultation" means the lead is in stage Consultation booked, Proposal sent or Won. All leads of the source count, closed ones included.
 
 **Later**
 - CSV import, rep assignment, reminders, a live CRM connection.
@@ -74,3 +74,6 @@ Bands: **Hot** 70 and above, **Warm** 40 to 69, **Cool** below 40. Won and Lost 
 6. Opening `index.html` from disk shows the full dashboard, and the page makes zero requests to any other origin.
 7. At 390px width there is no horizontal scroll on the page.
 8. First paint with the full dataset takes under one second on a normal laptop.
+9. With filters or a search active, every lead shown matches all of them, its rank is the same as in the unfiltered queue, and the top four numbers are unchanged. With no match, a message is shown.
+10. Opening a lead shows four parts whose points add up to its score, and their maximums add up to 100.
+11. For each source, the lead count and the share in the marketing panel equal counts taken from the data file.

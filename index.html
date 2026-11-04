@@ -51,6 +51,30 @@
           <h2 id="queue-title">Priority queue</h2>
           <p class="hint">Open leads, highest score first</p>
         </div>
+        <div class="filters" role="search" aria-label="Filter the priority queue">
+          <div class="field field-search">
+            <label for="f-query">Search by name</label>
+            <input id="f-query" type="search" autocomplete="off" placeholder="Type a name">
+          </div>
+          <div class="field">
+            <label for="f-source">Source</label>
+            <select id="f-source"></select>
+          </div>
+          <div class="field">
+            <label for="f-stage">Stage</label>
+            <select id="f-stage"></select>
+          </div>
+          <div class="field">
+            <label for="f-band">Band</label>
+            <select id="f-band"></select>
+          </div>
+          <div class="field">
+            <label for="f-country">Country</label>
+            <select id="f-country"></select>
+          </div>
+          <button type="button" id="f-clear" class="clear">Clear filters</button>
+        </div>
+        <p class="count" id="count" aria-live="polite"></p>
         <table class="queue">
           <caption class="sr-only">Open leads ranked by priority score</caption>
           <thead>
@@ -73,6 +97,14 @@
             <p class="hint">Leads in each stage</p>
           </div>
           <ol id="pipeline" class="pipeline"></ol>
+        </section>
+
+        <section class="panel" aria-labelledby="sources-title">
+          <div class="panel-head">
+            <h2 id="sources-title">Source quality</h2>
+            <p class="hint">Share of leads that reached a consultation</p>
+          </div>
+          <ol id="sources" class="pipeline"></ol>
         </section>
 
         <section class="panel">

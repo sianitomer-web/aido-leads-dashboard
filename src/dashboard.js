@@ -51,6 +51,63 @@
       .map(({ label, points }) => ({ label, points }));
   }
 
+  // Per source: how many leads, and how many reached a consultation
+  // (stage Consultation booked, Proposal sent or Won). Closed leads are included.
+  const REACHED_STAGES = ['Consultation booked', 'Proposal sent', 'Won'];
+
+  function sourceQuality(leads) {
+    return Object.keys(Scoring.SOURCE_POINTS)
+      .map((source) => {
+        const mine = leads.filter((l) => l.source === source);
+        const reached = mine.filter((l) => REACHED_STAGES.includes(l.stage)).length;
+        return {
+          source,
+          leads: mine.length,
+          reached,
+          share: mine.length === 0 ? 0 : Math.round((reached / mine.length) * 100),
+        };
+      })
+      .sort((a, b) => b.share - a.share || b.leads - a.leads);
+  }
+
+  // The four parts of one lead's score, each with its maximum and a plain-words note.
+  function breakdownRows(lead, parts, asOf) {
+    const hours = Scoring.hoursSince(lead.last_contact_at, asOf);
+    const engagementNote = { booked: 'Consultation booked', replied: 'Replied', none: 'No reply yet' }[lead.engagement];
+    return [
+      { label: 'Source', points: parts.source, max: 30, note: lead.source },
+      { label: 'Profile', points: parts.completeness, max: 25, note: `${lead.completeness}% of the intake form answered` },
+      { label: 'Engagement', points: parts.engagement, max: 25, note: engagementNote },
+      { label: 'Urgency', points: parts.urgency, max: 20, note: `Untouched ${ageLabel(hours)}` },
+    ];
+  }
+
+  // The values each filter can take, in a fixed order.
+  function filterOptions() {
+    return {
+      sources: Object.keys(Scoring.SOURCE_POINTS),
+      stages: STAGES.filter((stage) => stage !== 'Won' && stage !== 'Lost'),
+      bands: ['Hot', 'Warm', 'Cool'],
+      countries: ['Canada', 'Australia'],
+    };
+  }
+
+  // Keeps the queue items that match every active filter. Ranks are not renumbered.
+  // A filter set to 'all' (or an empty search) is not active.
+  function filterQueue(queue, filters) {
+    const query = (filters.query || '').trim().toLowerCase();
+    return queue.filter((item) => {
+      const { lead, band } = item;
+      return (
+        (filters.source === 'all' || lead.source === filters.source) &&
+        (filters.stage === 'all' || lead.stage === filters.stage) &&
+        (filters.band === 'all' || band === filters.band) &&
+        (filters.country === 'all' || lead.country === filters.country) &&
+        (query === '' || lead.name.toLowerCase().includes(query))
+      );
+    });
+  }
+
   // "4 Nov 2026, 09:00 UTC", from the data's own timestamp.
   function formatAsOf(timestamp) {
     const d = new Date(timestamp);
@@ -59,5 +116,5 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, formatAsOf };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, filterOptions, filterQueue, formatAsOf };
 });

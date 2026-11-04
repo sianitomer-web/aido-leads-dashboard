@@ -97,3 +97,8 @@ test('queue does not modify its input', () => {
   Scoring.buildQueue(input, AS_OF);
   assert.equal(JSON.stringify(input), copy);
 });
+
+test('every queue item carries its rank in the full queue, starting at 1', () => {
+  const queue = Scoring.buildQueue([reference.L1, reference.L2, reference.L5], AS_OF);
+  assert.deepEqual(queue.map((q) => q.rank), [1, 2, 3]);
+});
