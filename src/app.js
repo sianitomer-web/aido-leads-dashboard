@@ -32,6 +32,21 @@
     document.getElementById('kpi-new').textContent = k.newToday;
     document.getElementById('kpi-overdue').textContent = k.overdue;
     document.getElementById('kpi-hot').textContent = k.hot;
+
+    const notes = Dashboard.kpiNotes();
+    document.getElementById('kpi-new-note').textContent = notes.newToday;
+    document.getElementById('kpi-overdue-note').textContent = notes.overdue;
+    document.getElementById('kpi-hot-note').textContent = notes.hot;
+
+    // The Overdue card is styled only while at least one lead is Overdue.
+    const overdueCard = document.querySelector('.kpi-overdue');
+    overdueCard.classList.toggle('has-overdue', k.overdue > 0);
+  }
+
+  function renderRules() {
+    const list = document.getElementById('how-rules');
+    list.textContent = '';
+    Dashboard.scoreRules().forEach((line) => list.appendChild(el('li', '', line)));
   }
 
   const fullQueue = Scoring.buildQueue(data.leads, data.as_of);
@@ -127,7 +142,7 @@
       list.appendChild(li);
     });
     const total = el('p', 'part-total');
-    total.textContent = `Score ${item.score} out of 100`;
+    total.textContent = `Score ${item.score} out of ${Scoring.maxScore()}`;
     td.appendChild(list);
     td.appendChild(total);
     row.appendChild(td);
@@ -215,6 +230,7 @@
 
   renderHeader();
   renderKpis();
+  renderRules();
   setupFilters();
   renderQueue();
   renderPipeline();

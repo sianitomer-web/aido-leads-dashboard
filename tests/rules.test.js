@@ -175,3 +175,21 @@ test('keyboard: nothing forces a custom tab order and every control is native', 
   assert.ok(!/<div[^>]+onclick|<span[^>]+onclick/i.test(html), 'a div or span acts as a button');
   assert.match(css, /:focus-visible/);
 });
+
+// Done means 5 (full): with no Overdue leads there is no red at all, including the Overdue number.
+test('the Overdue card is red only while at least one lead is Overdue', () => {
+  for (const { selector, body } of ruleBlocks(css)) {
+    if (selector === ':root') continue;
+    if (/var\(\s*--overdue/.test(body) && /kpi-overdue/.test(selector)) {
+      assert.ok(/has-overdue/.test(selector), `"${selector}" colours the Overdue card without checking for Overdue leads`);
+    }
+  }
+  assert.match(appJs, /classList\.toggle\(\s*['"]has-overdue['"]\s*,\s*[^)]*overdue\s*>\s*0/, 'app.js switches the red on only when the count is above zero');
+});
+
+// Rules: scoring rules are defined once; the page text that states them is generated.
+test('the HTML and the page script do not repeat scoring rules as fixed text', () => {
+  for (const [name, text] of [['index.html', html], ['src/app.js', appJs]]) {
+    assert.ok(!/Referral\s+30|Webinar\s+25|\b48h|\b70 and above|out of 100|up to 30|up to 25|up to 20/.test(text), `${name} states a scoring rule as fixed text`);
+  }
+});

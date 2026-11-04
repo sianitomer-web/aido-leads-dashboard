@@ -17,7 +17,7 @@
     const open = leads.filter(Scoring.isOpen);
     return {
       open: open.length,
-      newToday: open.filter((l) => Scoring.hoursSince(l.created_at, asOf) < 24).length,
+      newToday: open.filter((l) => Scoring.hoursSince(l.created_at, asOf) < Scoring.RULES.newHours).length,
       overdue: open.filter((l) => Scoring.isOverdue(l, asOf)).length,
       hot: open.filter((l) => Scoring.bandFor(Scoring.scoreLead(l, asOf)) === 'Hot').length,
     };
@@ -74,11 +74,12 @@
   function breakdownRows(lead, parts, asOf) {
     const hours = Scoring.hoursSince(lead.last_contact_at, asOf);
     const engagementNote = { booked: 'Consultation booked', replied: 'Replied', none: 'No reply yet' }[lead.engagement];
+    const max = Scoring.maxPoints();
     return [
-      { label: 'Source', points: parts.source, max: 30, note: lead.source },
-      { label: 'Profile', points: parts.completeness, max: 25, note: `${lead.completeness}% of the intake form answered` },
-      { label: 'Engagement', points: parts.engagement, max: 25, note: engagementNote },
-      { label: 'Urgency', points: parts.urgency, max: 20, note: `Untouched ${ageLabel(hours)}` },
+      { label: 'Source', points: parts.source, max: max.source, note: lead.source },
+      { label: 'Profile', points: parts.completeness, max: max.completeness, note: `${lead.completeness}% of the intake form answered` },
+      { label: 'Engagement', points: parts.engagement, max: max.engagement, note: engagementNote },
+      { label: 'Urgency', points: parts.urgency, max: max.urgency, note: `Untouched ${ageLabel(hours)}` },
     ];
   }
 
@@ -92,10 +93,40 @@
     };
   }
 
+  // The scoring rules in words, generated from Scoring.RULES so they cannot drift from the code.
+  function scoreRules() {
+    const r = Scoring.RULES;
+    const max = Scoring.maxPoints();
+    const pairs = (obj) => Object.entries(obj).map(([name, points]) => `${name} ${points}`).join(', ');
+    return [
+      `Source, up to ${max.source}: ${pairs(r.sourcePoints)}`,
+      `Profile, up to ${max.completeness}: share of the intake form answered`,
+      `Engagement, up to ${max.engagement}: ${pairs(r.engagementPoints)}`,
+      `Urgency, up to ${max.urgency}: ${r.overdueHours}h or more since contact ${r.urgencyPoints.overdue}, ` +
+        `${r.warningHours}h to ${r.overdueHours}h ${r.urgencyPoints.warning}`,
+      `Hot is ${r.hotFrom} and above, Warm ${r.warmFrom} to ${r.hotFrom - 1}, Cool below ${r.warmFrom}.`,
+    ];
+  }
+
+  // The small note under each top number, generated from the same rules.
+  function kpiNotes() {
+    const r = Scoring.RULES;
+    return {
+      newToday: `created in the last ${r.newHours}h`,
+      overdue: `no contact for ${r.overdueHours}h or more`,
+      hot: `score ${r.hotFrom} and above`,
+    };
+  }
+
+  // Lower-case and strip accents, so "tomas" finds "Tomás".
+  function fold(text) {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
   // Keeps the queue items that match every active filter. Ranks are not renumbered.
   // A filter set to 'all' (or an empty search) is not active.
   function filterQueue(queue, filters) {
-    const query = (filters.query || '').trim().toLowerCase();
+    const query = fold((filters.query || '').trim());
     return queue.filter((item) => {
       const { lead, band } = item;
       return (
@@ -103,7 +134,7 @@
         (filters.stage === 'all' || lead.stage === filters.stage) &&
         (filters.band === 'all' || band === filters.band) &&
         (filters.country === 'all' || lead.country === filters.country) &&
-        (query === '' || lead.name.toLowerCase().includes(query))
+        (query === '' || fold(lead.name).includes(query))
       );
     });
   }
@@ -116,5 +147,5 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, filterOptions, filterQueue, formatAsOf };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, scoreRules, kpiNotes, filterOptions, filterQueue, formatAsOf };
 });
