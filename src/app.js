@@ -61,7 +61,12 @@
       const row = el('tr', overdue ? 'row-overdue' : '');
 
       const who = el('div', 'who');
-      who.appendChild(el('span', 'who-name', lead.name));
+      const detailId = `detail-${lead.id}`;
+      const toggle = el('button', 'who-name', lead.name);
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-controls', detailId);
+      who.appendChild(toggle);
       who.appendChild(el('span', 'who-meta', `${lead.country} · ${lead.source}`));
       const leadWrap = el('div', 'lead-wrap');
       leadWrap.appendChild(el('span', 'rank', String(rank)));
@@ -88,7 +93,45 @@
       row.appendChild(cell('c-age', age));
       row.appendChild(cell('c-why', why));
       body.appendChild(row);
+
+      const detail = renderDetail(item, detailId);
+      body.appendChild(detail);
+      toggle.addEventListener('click', () => {
+        const open = detail.hidden;
+        detail.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+      });
     });
+  }
+
+  // The four parts of one lead's score, shown when its name is opened.
+  function renderDetail(item, id) {
+    const row = el('tr', 'detail-row');
+    row.id = id;
+    row.hidden = true;
+    const td = el('td', 'detail');
+    td.setAttribute('colspan', '5');
+    const list = el('ul', 'parts');
+    Dashboard.breakdownRows(item.lead, item.breakdown, data.as_of).forEach((part) => {
+      const li = el('li', 'part');
+      const head = el('div', 'part-head');
+      head.appendChild(el('span', 'part-name', part.label));
+      head.appendChild(el('span', 'part-note', part.note));
+      head.appendChild(el('b', 'part-points', `${part.points} / ${part.max}`));
+      const track = el('div', 'bar');
+      const fill = el('div', 'bar-fill');
+      fill.style.width = `${(part.points / part.max) * 100}%`;
+      track.appendChild(fill);
+      li.appendChild(head);
+      li.appendChild(track);
+      list.appendChild(li);
+    });
+    const total = el('p', 'part-total');
+    total.textContent = `Score ${item.score} out of 100`;
+    td.appendChild(list);
+    td.appendChild(total);
+    row.appendChild(td);
+    return row;
   }
 
   function fillSelect(id, label, values, key) {

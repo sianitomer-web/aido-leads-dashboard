@@ -132,3 +132,41 @@ test('filter options list the real values, in a fixed order', () => {
   assert.deepEqual(o.bands, ['Hot', 'Warm', 'Cool']);
   assert.deepEqual(o.countries, ['Canada', 'Australia']);
 });
+
+// ---------- Score breakdown for one lead (Done means 10) ----------
+
+test('for every open lead the four parts add up to its score and the maximums add up to 100', () => {
+  for (const item of fullQueue()) {
+    const rows = Dashboard.breakdownRows(item.lead, item.breakdown, AS_OF);
+    assert.equal(rows.length, 4, `${item.lead.id} has four parts`);
+    assert.equal(rows.reduce((sum, r) => sum + r.points, 0), item.score, `${item.lead.id} points add up`);
+    assert.equal(rows.reduce((sum, r) => sum + r.max, 0), 100, `${item.lead.id} maximums add up`);
+    for (const r of rows) assert.ok(r.points >= 0 && r.points <= r.max, `${item.lead.id} ${r.label} within its maximum`);
+  }
+});
+
+test('breakdown rows are named in a fixed order and explain each part in words', () => {
+  const lead = {
+    id: 'B', name: 'Breakdown Test', country: 'Australia', source: 'Webinar', stage: 'Contacted',
+    completeness: 60, engagement: 'replied', created_at: '2026-10-20T09:00:00Z', last_contact_at: '2026-11-03T09:00:00Z',
+  };
+  // 25 + 15 + 15 + 10 (untouched exactly 24h) = 65
+  const rows = Dashboard.breakdownRows(lead, Scoring.scoreBreakdown(lead, AS_OF), AS_OF);
+  assert.deepEqual(rows.map((r) => r.label), ['Source', 'Profile', 'Engagement', 'Urgency']);
+  assert.deepEqual(rows.map((r) => [r.points, r.max]), [[25, 30], [15, 25], [15, 25], [10, 20]]);
+  assert.equal(rows[0].note, 'Webinar');
+  assert.equal(rows[1].note, '60% of the intake form answered');
+  assert.equal(rows[2].note, 'Replied');
+  assert.equal(rows[3].note, 'Untouched 24h');
+});
+
+test('engagement note covers all three engagement values', () => {
+  const base = { id: 'E', name: 'E', country: 'Canada', source: 'Meta', stage: 'New', completeness: 50, created_at: '2026-11-04T08:00:00Z', last_contact_at: '2026-11-04T08:00:00Z' };
+  const noteFor = (engagement) => {
+    const lead = { ...base, engagement };
+    return Dashboard.breakdownRows(lead, Scoring.scoreBreakdown(lead, AS_OF), AS_OF)[2].note;
+  };
+  assert.equal(noteFor('booked'), 'Consultation booked');
+  assert.equal(noteFor('replied'), 'Replied');
+  assert.equal(noteFor('none'), 'No reply yet');
+});

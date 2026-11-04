@@ -51,6 +51,18 @@
       .map(({ label, points }) => ({ label, points }));
   }
 
+  // The four parts of one lead's score, each with its maximum and a plain-words note.
+  function breakdownRows(lead, parts, asOf) {
+    const hours = Scoring.hoursSince(lead.last_contact_at, asOf);
+    const engagementNote = { booked: 'Consultation booked', replied: 'Replied', none: 'No reply yet' }[lead.engagement];
+    return [
+      { label: 'Source', points: parts.source, max: 30, note: lead.source },
+      { label: 'Profile', points: parts.completeness, max: 25, note: `${lead.completeness}% of the intake form answered` },
+      { label: 'Engagement', points: parts.engagement, max: 25, note: engagementNote },
+      { label: 'Urgency', points: parts.urgency, max: 20, note: `Untouched ${ageLabel(hours)}` },
+    ];
+  }
+
   // The values each filter can take, in a fixed order.
   function filterOptions() {
     return {
@@ -85,5 +97,5 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, filterOptions, filterQueue, formatAsOf };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, filterOptions, filterQueue, formatAsOf };
 });
