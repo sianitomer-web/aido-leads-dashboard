@@ -32,8 +32,8 @@ Close it with a commit that says `Fixes #<number>`.
 
 ## Project rules
 
-- No external requests: no CDN, no web fonts, no analytics.
-- All numbers on screen are computed from `data/leads.json`. The dashboard never reads the real clock; "now" is `as_of` in the data file.
+- No external requests: no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
+- All numbers on screen are computed from `data/leads.js`. The dashboard never reads the real clock; "now" is `as_of` in the data file.
 - Red marks Overdue leads only.
 - Mock data only. No real people, companies or contact details.
 - Scoring rules live in one place in the code. If the spec changes a weight, change it there, with a test.
