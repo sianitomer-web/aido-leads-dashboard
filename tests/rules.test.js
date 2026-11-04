@@ -193,3 +193,11 @@ test('the HTML and the page script do not repeat scoring rules as fixed text', (
     assert.ok(!/Referral\s+30|Webinar\s+25|\b48h|\b70 and above|out of 100|up to 30|up to 25|up to 20/.test(text), `${name} states a scoring rule as fixed text`);
   }
 });
+
+// Where: the layout changes exactly where SPEC.md says (1023px and 760px).
+test('layout breakpoints match the spec: side column moves below at 1023px, cards at 760px', () => {
+  const widths = [...css.matchAll(/@media\s*\(max-width:\s*(\d+)px\)/g)].map((m) => Number(m[1]));
+  assert.ok(widths.includes(1023), 'a max-width: 1023px breakpoint');
+  assert.ok(widths.includes(760), 'a max-width: 760px breakpoint');
+  assert.match(css, /@media\s*\(min-width:\s*1024px\)/, 'the sticky side column starts at 1024px');
+});
