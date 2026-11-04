@@ -35,7 +35,7 @@ Plain scripts only, no build step, no dependencies, no external requests.
 node --test
 ```
 
-Requires Node 20 or newer. 44 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
+Requires Node 20 or newer. 50 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
 
 ## Done means, and the evidence
 
@@ -45,13 +45,19 @@ Requires Node 20 or newer. 44 tests, including checks that red is used only for 
 | 2 | Scores match hand-computed values | `tests/scoring.test.js` |
 | 3 | Overdue at exactly 48:00h, not at 47:59h | `tests/scoring.test.js` |
 | 4 | Top four numbers equal counts from the data | `tests/dashboard.test.js` |
-| 5 | Only red is on Overdue markers | `tests/rules.test.js` and a computed-style check in a browser |
+| 5 | Only red is on Overdue, and none at all when no lead is Overdue | `tests/rules.test.js`; browser computed-style check on the real data and on a copy with no Overdue leads |
 | 6 | Works from disk, no requests to other origins | `tests/rules.test.js`, browser network log |
 | 7 | No horizontal scroll at 390px | Browser check, including filters and open details |
-| 8 | First paint under one second | Browser measurement: 56 ms |
+| 8 | First contentful paint under one second | Browser measurement: 56 ms |
 | 9 | Filters keep ranks and top numbers | `tests/dashboard.test.js` and browser |
 | 10 | Breakdown adds up to the score | `tests/dashboard.test.js` and browser |
 | 11 | Source panel matches the data | `tests/dashboard.test.js` and browser |
+
+Also checked with real key presses: Tab reaches every control in a sensible order, and Enter or Space opens and closes a lead's score breakdown.
+
+## Independent review
+
+The dashboard was reviewed by an agent that had seen only `SPEC.md` and `Practice.md`. It found one real defect (red stayed on the Overdue card with zero Overdue leads), scoring rules repeated as fixed text, and a list of ambiguities in the spec. All were fixed spec-first; the commit history shows the order.
 
 ## History
 
