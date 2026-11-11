@@ -8,24 +8,23 @@
 
 ## What it is / is not
 
-**It is** a single-page, read-only dashboard over a fictional dataset of about 60 leads for "Harbor Migration" (Canada and Australia). It ranks open leads by a transparent priority score, flags leads nobody has touched for 48 hours or more, and shows where the pipeline stands.
+**It is** a single-page, read-only dashboard over a fictional dataset of about 60 leads for "Harbor Migration" (Canada and Australia), read from an Airtable base. It ranks open leads by a transparent priority score, flags leads nobody has touched for 48 hours or more, and shows where the pipeline stands.
 
 **It is not:**
 - a CRM: no adding, editing or deleting leads
 - a messaging tool: no email, SMS or WhatsApp
 - a login, accounts or permissions system
-- connected to real data or any API
 - a forecast or revenue tool
 - an AI or machine-learning model: the score is rule-based and every point is explainable
 - a ranking of sales reps
 
 ## Where
 
-Browser only. Static site: HTML, CSS, JavaScript and one data file. No backend, no build step, no external requests (no CDN, no web fonts). It must work both when `index.html` is opened straight from disk and when served from GitHub Pages, so scripts are plain (non-module) scripts and the data is loaded as a script, not fetched. It is one page with no tabs or navigation, and it scrolls vertically. Desktop-first (1024px and up): the queue and a side column sit next to each other. Between 761 and 1023px the side column moves below the queue; at 760px and below each queue row becomes a card. Must stay fully usable at 390px wide.
+Browser only. Static site: HTML, CSS and JavaScript. No backend, no build step. The only external request is one read-only call to the Airtable API that loads the leads; no CDN, no web fonts, no analytics. It must work both when `index.html` is opened straight from disk and when served from GitHub Pages, so scripts are plain (non-module) scripts and the leads are fetched from Airtable when the page opens. It is one page with no tabs or navigation, and it scrolls vertically. Desktop-first (1024px and up): the queue and a side column sit next to each other. Between 761 and 1023px the side column moves below the queue; at 760px and below each queue row becomes a card. Must stay fully usable at 390px wide.
 
 ## Data (mock)
 
-One file, `data/leads.js`, which defines the dataset and an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible.
+The leads are the rows of the table `Leads` in the Airtable base "Harbor Leads", read with a read-only token limited to that base. A small file, `data/meta.js`, holds the company name and an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible for the same rows.
 
 Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked).
 
@@ -64,6 +63,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 ## Features
 
 **Must**
+- As Maya, I see the board filled from the Airtable base, not from a file in the repository.
 - As Maya, I see four numbers at the top: open leads, new in the last 24h, overdue, hot.
 - As Maya, I see open leads in a queue ordered by score, highest first, each with its band and the reason it ranks there.
 - As Maya, I see overdue leads marked, with the hours since last contact.
@@ -80,7 +80,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 ## Rules that must hold everywhere
 
 - **Red is used only to mark Overdue.** It appears on the Overdue number and on Overdue rows, and only while at least one lead is Overdue. Bands and stages use other colours.
-- Every number about the leads is computed from `data/leads.js`. The scoring rules (weights, thresholds, maximums) are defined once, in `src/scoring.js`, and any text on the page that states them is generated from there.
+- Every number about the leads is computed from the leads loaded from Airtable. The scoring rules (weights, thresholds, maximums) are defined once, in `src/scoring.js`, and any text on the page that states them is generated from there.
 - All text has a contrast ratio of at least 4.5:1 (WCAG AA), and every control can be reached with Tab and operated with Enter or Space.
 
 ## Done means
@@ -88,11 +88,13 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 1. The queue is ordered by score, highest first; ties go to the lead with the oldest last contact.
 2. For the five reference leads in the table above, the score, the Overdue flag and the queue order equal the table.
 3. A lead last contacted exactly 48:00h before `as_of` is Overdue; at 47:59h it is not. At exactly 24:00h the urgency part is 10. Won and Lost leads are never Overdue.
-4. The four top numbers always equal counts taken directly from the data file.
+4. The four top numbers always equal counts taken directly from the loaded leads.
 5. The only red on the page marks Overdue. With no Overdue leads in the data there is no red anywhere on the page, including the Overdue number.
-6. Opening `index.html` from disk shows the full dashboard, and the browser's network panel shows no requests to any other origin.
+6. Opening `index.html` from disk shows the full dashboard, and the browser's network panel shows only read (GET) requests to `api.airtable.com` and none to any other origin.
 7. At 390px width there is no horizontal scroll on the page.
-8. First contentful paint with the full dataset is under one second, measured in a desktop browser.
+8. First contentful paint is under one second, measured in a desktop browser; the leads appear when Airtable answers.
 9. With filters or a search active, every lead shown matches all of them, its rank is the same as in the unfiltered queue, and the top four numbers are unchanged. With no match, a message is shown.
 10. Opening a lead shows four parts whose points add up to its score, and their maximums add up to 100.
-11. For each source, the lead count and the share in the marketing panel equal counts taken from the data file.
+11. For each source, the lead count and the share in the marketing panel equal counts taken from the loaded leads.
+12. The leads on the page are the rows of the Airtable table: the number loaded equals the number of rows in the table, across all pages of results, and the page sends no request that writes.
+13. If Airtable cannot be reached or refuses the token, the page shows one clear message and no leads. It never falls back to stored or old data.
