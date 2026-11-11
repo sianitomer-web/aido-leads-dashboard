@@ -62,7 +62,7 @@ Also checked with real key presses: Tab reaches every control in a sensible orde
 
 ## Airtable connection
 
-The leads live in the table `Leads` of the Airtable base "Harbor Leads". The page reads them with a **read-only** token that can see that base only. The token goes in `airtable-config.js`, which is not in the repository by default:
+The leads live in the table `Leads` of the Airtable base "Harbor Leads". The page reads them with a **read-only** token that can see that base only. The token goes in `airtable-config.js`. Git ignores that file, so the token is never in the repository. On GitHub Pages, `.github/workflows/pages.yml` writes the file at publish time from the repository secret `AIRTABLE_TOKEN`. The file looks like this:
 
 ```js
 window.AIRTABLE_CONFIG = {
@@ -72,7 +72,7 @@ window.AIRTABLE_CONFIG = {
 };
 ```
 
-Without this file the page shows a message and no leads, by design (Done 13). The token must never have write access.
+Without this file the page shows a message and no leads, by design (Done 13). The token must never have write access. The browser still receives the token, because the page itself calls Airtable, so it is deliberately a read-only token for one base of fictional leads.
 
 ## Independent review
 
