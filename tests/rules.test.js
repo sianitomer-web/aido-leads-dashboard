@@ -203,3 +203,14 @@ test('layout breakpoints match the spec: side column moves below at 1023px, card
   assert.ok(widths.includes(760), 'a max-width: 760px breakpoint');
   assert.match(css, /@media\s*\(min-width:\s*1024px\)/, 'the sticky side column starts at 1024px');
 });
+
+// The news panel must be padded like the other side panels, or its text touches the panel border.
+test('the news list and note have the same side padding as the other side panels', () => {
+  const sidePadding = (selector) => {
+    const rule = css.match(new RegExp(`(^|\\n)${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`))[2];
+    const values = rule.match(/padding:\s*([^;]+);/)[1].trim().split(/\s+/);
+    return values.length === 1 ? values[0] : values[1]; // CSS shorthand: the second value is the sides
+  };
+  assert.equal(sidePadding('.news'), sidePadding('.pipeline'));
+  assert.equal(sidePadding('.news-note'), sidePadding('.pipeline'));
+});
