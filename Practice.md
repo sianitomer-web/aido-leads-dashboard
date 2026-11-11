@@ -32,10 +32,11 @@ Close it with a commit that says `Fixes #<number>`.
 
 ## Project rules
 
-- No external requests: no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
-- All numbers on screen are computed from `data/leads.js`. The dashboard never reads the real clock; "now" is `as_of` in the data file.
+- No external requests except the one read-only call to the Airtable API that loads the leads: no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
+- All numbers on screen are computed from the leads loaded from Airtable. The dashboard never reads the real clock; "now" is `as_of` in `data/meta.js`.
 - Red marks Overdue leads only.
-- Mock data only. No real people, companies or contact details.
+- Mock data only. No real people, companies or contact details. The Airtable base holds fictional leads only.
+- The Airtable token is read-only and lives only in `airtable-config.js`, which git ignores. Never paste it in chat, and never commit it without Tomer's explicit OK.
 - Scoring rules live in one place in the code. If the spec changes a weight, change it there, with a test.
 
 ## When the agent does the wrong thing
