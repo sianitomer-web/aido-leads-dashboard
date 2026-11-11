@@ -32,11 +32,11 @@ Close it with a commit that says `Fixes #<number>`.
 
 ## Project rules
 
-- No external requests except the read-only calls to the Airtable API (the leads) and the GNews API (the news panel): no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
+- No external requests from the browser except the read-only call to the Airtable API that loads the leads: no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
 - All numbers on screen are computed from the leads loaded from Airtable. The dashboard never reads the real clock; "now" is `as_of` in `data/meta.js`.
 - Red marks Overdue leads only.
 - Mock data only for the leads: no real people, companies or contact details, and the Airtable base holds fictional leads only. The news panel is the one exception: it shows real public headlines, and no score or number depends on it.
-- The Airtable token and the GNews key live only in `airtable-config.js` and `gnews-config.js`, which git ignores. On GitHub Pages those files are written at publish time from the repository secrets `AIRTABLE_TOKEN` and `GNEWS_API_KEY` (`.github/workflows/pages.yml`). Never paste a token or key in chat, and never commit one.
+- The Airtable token lives only in `airtable-config.js`, which git ignores; on GitHub Pages that file is written at publish time from the repository secret `AIRTABLE_TOKEN` (`.github/workflows/pages.yml`). The GNews key is read only by `scripts/fetch-news.js`, from the secret `GNEWS_API_KEY` or from the git-ignored `gnews-config.js`, and is never served to the browser. Never paste a token or key in chat, and never commit one.
 - Scoring rules live in one place in the code. If the spec changes a weight, change it there, with a test.
 
 ## When the agent does the wrong thing
