@@ -21,6 +21,7 @@
   </header>
 
   <main class="wrap">
+    <p id="load-error" class="notice" role="alert" hidden></p>
     <h2 class="sr-only">Today at a glance</h2>
     <ul class="kpis">
       <li class="kpi">
@@ -119,7 +120,9 @@
     <p class="foot">Mock data: every lead is fictional. Rules are in SPEC.md.</p>
   </main>
 
-  <script src="data/leads.js"></script>
+  <script src="data/meta.js"></script>
+  <script src="airtable-config.js"></script>
+  <script src="src/airtable.js"></script>
   <script src="src/scoring.js"></script>
   <script src="src/dashboard.js"></script>
   <script src="src/app.js"></script>

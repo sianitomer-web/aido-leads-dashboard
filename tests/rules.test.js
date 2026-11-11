@@ -125,7 +125,8 @@ test('no red keyword or colour literal in the HTML or the page script', () => {
   assert.ok(!/\bred\b|crimson|tomato/i.test(css), 'styles.css uses a red colour keyword');
 });
 
-// Done means 6: no requests to any other origin; works when opened from disk.
+// Done means 6: no page file but src/airtable.js has a URL (it holds the one Airtable address, tested in
+// tests/airtable.test.js); works when opened from disk.
 test('no external URLs anywhere in the page files', () => {
   for (const [name, text] of [['index.html', html], ['styles.css', css], ['src/app.js', appJs]]) {
     assert.ok(!/https?:\/\//i.test(text), `${name} contains an absolute URL`);
@@ -141,7 +142,8 @@ test('plain scripts only, no fetching, so the page works from disk', () => {
   assert.ok(scripts.length >= 3, 'index.html loads the data and the scripts');
   for (const src of scripts) {
     assert.ok(!/^[a-z]+:|^\//i.test(src), `${src} is not a relative path`);
-    assert.ok(fs.existsSync(path.join(ROOT, src)), `${src} exists`);
+    // airtable-config.js holds the token, so git ignores it and a fresh clone does not have it.
+    if (src !== 'airtable-config.js') assert.ok(fs.existsSync(path.join(ROOT, src)), `${src} exists`);
   }
 });
 
