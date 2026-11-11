@@ -20,11 +20,13 @@
 
 ## Where
 
-Browser only. Static site: HTML, CSS and JavaScript. No backend, no build step. The only external request is one read-only call to the Airtable API that loads the leads; no CDN, no web fonts, no analytics. It must work both when `index.html` is opened straight from disk and when served from GitHub Pages, so scripts are plain (non-module) scripts and the leads are fetched from Airtable when the page opens. It is one page with no tabs or navigation, and it scrolls vertically. Desktop-first (1024px and up): the queue and a side column sit next to each other. Between 761 and 1023px the side column moves below the queue; at 760px and below each queue row becomes a card. Must stay fully usable at 390px wide.
+Browser only. Static site: HTML, CSS and JavaScript. No backend, no build step. The only external requests are a read-only call to the Airtable API that loads the leads and a read-only call to the GNews API that loads the news panel; no CDN, no web fonts, no analytics. It must work both when `index.html` is opened straight from disk and when served from GitHub Pages, so scripts are plain (non-module) scripts and the leads are fetched from Airtable when the page opens. It is one page with no tabs or navigation, and it scrolls vertically. Desktop-first (1024px and up): the queue and a side column sit next to each other. Between 761 and 1023px the side column moves below the queue; at 760px and below each queue row becomes a card. Must stay fully usable at 390px wide.
 
 ## Data (mock)
 
 The leads are the rows of the table `Leads` in the Airtable base "Harbor Leads", read with a read-only token limited to that base. A small file, `data/meta.js`, holds the company name and an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible for the same rows.
+
+The news panel is the one part not about the leads: it reads real, public headlines from the GNews API with a free key. Its content changes every day and no number or score depends on it.
 
 Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked).
 
@@ -72,6 +74,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 **Should**
 - Filter the queue by source, stage, band and country (one value each, all of them must match), and search it by name (any part of the name, ignoring case and accents). Filters narrow the queue only: the top four numbers and the pipeline do not change, and each lead keeps its rank from the full queue. If nothing matches, the page says so.
 - Open a lead to see its score broken into the four parts, each shown as points out of its maximum.
+- News panel: up to five of the newest headlines about immigration to Canada or Australia, each with its source and date and a link that opens the article in a new tab. It is background reading for a call. It never changes a score, a rank or a number about the leads.
 - Marketing panel: for each source, the number of leads and the share that reached a consultation. "Reached a consultation" means the lead is in stage Consultation booked, Proposal sent or Won. All leads of the source count, closed ones included. The share is a whole percent; sources are listed highest share first, then most leads. A lead that reached a consultation and was later marked Lost is not counted, because the data has no stage history.
 
 **Later**
@@ -90,7 +93,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 3. A lead last contacted exactly 48:00h before `as_of` is Overdue; at 47:59h it is not. At exactly 24:00h the urgency part is 10. Won and Lost leads are never Overdue.
 4. The four top numbers always equal counts taken directly from the loaded leads.
 5. The only red on the page marks Overdue. With no Overdue leads in the data there is no red anywhere on the page, including the Overdue number.
-6. Opening `index.html` from disk shows the full dashboard, and the browser's network panel shows only read (GET) requests to `api.airtable.com` and none to any other origin.
+6. Opening `index.html` from disk shows the full dashboard, and the browser's network panel shows only read (GET) requests to `api.airtable.com` and `gnews.io` and none to any other origin.
 7. At 390px width there is no horizontal scroll on the page.
 8. First contentful paint is under one second, measured in a desktop browser; the leads appear when Airtable answers.
 9. With filters or a search active, every lead shown matches all of them, its rank is the same as in the unfiltered queue, and the top four numbers are unchanged. With no match, a message is shown.
@@ -98,3 +101,5 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 11. For each source, the lead count and the share in the marketing panel equal counts taken from the loaded leads.
 12. The leads on the page are the rows of the Airtable table: the number loaded equals the number of rows in the table, across all pages of results, and the page sends no request that writes.
 13. If Airtable cannot be reached or refuses the token, the page shows one clear message and no leads. It never falls back to stored or old data.
+14. The news panel shows at most five headlines, newest first, each with its source, its date and a link to the article. No score, rank or top number changes because of it.
+15. If GNews cannot be reached or refuses the key, the panel shows one short note and the rest of the board still works. The board never waits for the news.
