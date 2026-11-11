@@ -1,11 +1,14 @@
-# Publishes the dashboard to GitHub Pages. The Airtable token is not in the repository:
-# it is stored as the repository secret AIRTABLE_TOKEN and written into airtable-config.js
-# only inside the published copy.
+# Publishes the dashboard to GitHub Pages, on every push to main and every six hours. The Airtable
+# token and the GNews key are not in the repository: they are the repository secrets AIRTABLE_TOKEN
+# and GNEWS_API_KEY. The token is written into airtable-config.js inside the published copy. The GNews
+# key is only used here, to fetch the headlines into data/news.js; it is never published.
 name: Publish to GitHub Pages
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 */6 * * *'   # refresh the news every six hours
   workflow_dispatch:
 
 permissions:
@@ -26,11 +29,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Build the site folder
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
         run: |
           test -n "$AIRTABLE_TOKEN" || { echo "The secret AIRTABLE_TOKEN is not set."; exit 1; }
+          test -n "$GNEWS_API_KEY" || { echo "The secret GNEWS_API_KEY is not set."; exit 1; }
           mkdir _site
           cp -r index.html styles.css src data _site/
           cat > _site/airtable-config.js <<EOF
@@ -40,6 +48,7 @@ jobs:
             tableId: "tblBy3u1dAeJtFCGW"
           };
           EOF
+          node scripts/fetch-news.js --out _site/data/news.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
