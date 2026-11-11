@@ -142,8 +142,8 @@ test('plain scripts only, no fetching, so the page works from disk', () => {
   assert.ok(scripts.length >= 3, 'index.html loads the data and the scripts');
   for (const src of scripts) {
     assert.ok(!/^[a-z]+:|^\//i.test(src), `${src} is not a relative path`);
-    // airtable-config.js holds the token, so git ignores it and a fresh clone does not have it.
-    if (src !== 'airtable-config.js') assert.ok(fs.existsSync(path.join(ROOT, src)), `${src} exists`);
+    // airtable-config.js holds a secret and data/news.js is written by the news job, so git ignores both.
+    if (!['airtable-config.js', 'data/news.js'].includes(src)) assert.ok(fs.existsSync(path.join(ROOT, src)), `${src} exists`);
   }
 });
 

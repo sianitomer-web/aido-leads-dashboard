@@ -14,6 +14,7 @@ Double-click `index.html`. No server and no install, but it needs internet and a
 - A priority queue: open leads ranked by a rule-based score out of 100, with the reasons behind each rank. Overdue leads are marked in red, and red is used for nothing else.
 - A pipeline count per stage, and a source quality panel (share of leads that reached a consultation).
 - Filters, name search, and a per-lead breakdown of the four score parts.
+- A news panel: up to five recent headlines about immigration to Canada or Australia, as background for a call. It touches no score or number.
 
 ## How it is built
 
@@ -22,6 +23,8 @@ Double-click `index.html`. No server and no install, but it needs internet and a
 | `SPEC.md` | What the dashboard is, what it is not, and when it counts as done |
 | `Practice.md` | How work is done in this repository: review, build, test, commit |
 | `data/meta.js` | The company name and the `as_of` time that acts as "now" |
+| `scripts/fetch-news.js` | Fetches the headlines from the GNews API and writes `data/news.js`. Runs in Node, never in the browser |
+| `data/news.js` | The headlines the page shows. Written by that script and not kept in git |
 | `src/airtable.js` | Reads the leads from the Airtable table: read-only GET requests, one per page of results |
 | `airtable-config.js` | The Airtable base, table and read-only token. Git ignores it (see below) |
 | `tests/fixtures/leads.js` | The 60 fictional leads as they are stored in Airtable, used by the tests |
@@ -30,7 +33,7 @@ Double-click `index.html`. No server and no install, but it needs internet and a
 | `src/app.js` | Draws the page |
 | `tests/` | Tests for the scoring, the numbers, the data, and the rules in the spec |
 
-Plain scripts only, no build step, no dependencies. The only request the page makes is the read-only call to the Airtable API.
+Plain scripts only, no build step, no dependencies. The only request the page makes is the read-only call to the Airtable API. The news comes from a file, not from a request.
 
 ## Run the tests
 
@@ -38,7 +41,7 @@ Plain scripts only, no build step, no dependencies. The only request the page ma
 node --test
 ```
 
-Requires Node 20 or newer. 60 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
+Requires Node 20 or newer. 68 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
 
 ## Done means, and the evidence
 
@@ -57,6 +60,9 @@ Requires Node 20 or newer. 60 tests, including checks that red is used only for 
 | 11 | Source panel matches the data | `tests/dashboard.test.js` and browser |
 | 12 | The leads on the page are the rows of the Airtable table, all pages, read-only | `tests/airtable.test.js`; browser against the live base: 46 open, 10 new, 8 overdue, 9 hot |
 | 13 | If Airtable cannot be reached or refuses the token, one clear message and no leads | `tests/airtable.test.js`; browser with no token settings |
+| 14 | News panel: at most five headlines from `data/news.js`, newest first, with the fetch time | `tests/news.test.js`; browser with real headlines |
+| 15 | No `data/news.js` or no headlines: one note, and the board still works | `tests/news.test.js`; browser on a copy without the file |
+| 16 | No news key in any file the browser receives | `tests/news.test.js` |
 
 Also checked with real key presses: Tab reaches every control in a sensible order, and Enter or Space opens and closes a lead's score breakdown.
 
@@ -73,6 +79,14 @@ window.AIRTABLE_CONFIG = {
 ```
 
 Without this file the page shows a message and no leads, by design (Done 13). The token must never have write access. The browser still receives the token, because the page itself calls Airtable, so it is deliberately a read-only token for one base of fictional leads.
+
+## News panel
+
+The panel reads `data/news.js`. A script, `scripts/fetch-news.js`, writes that file from the GNews API with a free key. The page never calls GNews, for two reasons: GNews does not allow other websites to read its answers (a real browser test showed the request is blocked), and a key in the page would be visible to everyone. Putting a small layer in the middle that holds the key is how this is done in real projects.
+
+- **On your computer:** put your key in `gnews-config.js` (git ignores it), then run `node scripts/fetch-news.js` and reload the page.
+- **On GitHub Pages:** the publish workflow runs the same script with the repository secret `GNEWS_API_KEY`, on every push to `main` and every six hours. The key is never published.
+- The free GNews plan delays articles by about twelve hours.
 
 ## Independent review
 

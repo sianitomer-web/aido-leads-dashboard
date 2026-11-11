@@ -236,7 +236,32 @@
     document.getElementById('count').textContent = 'No leads loaded.';
   }
 
+  // The news panel reads data/news.js, written by the scheduled job. It is separate from the board:
+  // a missing file or no headlines only shows a note, and the board never waits for it.
+  function renderNews() {
+    const news = window.NEWS_DATA;
+    const list = document.getElementById('news');
+    const note = document.getElementById('news-note');
+    list.textContent = '';
+    if (!news || !Array.isArray(news.headlines) || news.headlines.length === 0) {
+      note.textContent = 'No headlines are available right now.';
+      return;
+    }
+    news.headlines.forEach((headline) => {
+      const item = el('li', 'news-item');
+      const link = el('a', 'news-link', headline.title);
+      link.href = headline.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      item.appendChild(link);
+      item.appendChild(el('span', 'news-meta', `${headline.source} · ${headline.published_at.slice(0, 10)}`));
+      list.appendChild(item);
+    });
+    note.textContent = `Fetched ${news.fetched_at.slice(0, 16).replace('T', ' ')} UTC`;
+  }
+
   async function start() {
+    renderNews();
     document.getElementById('company').textContent = meta.company;
     document.getElementById('count').textContent = 'Loading leads from Airtable…';
     try {

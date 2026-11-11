@@ -527,3 +527,9 @@ main { padding-block: 20px 40px; }
   border-left: 4px solid var(--accent);
   border-radius: 8px;
 }
+
+.news { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.news-item { display: grid; gap: 2px; }
+.news-link { color: var(--accent-ink); font-weight: 600; text-decoration: underline; }
+.news-meta { color: var(--ink-soft); font-size: 0.85rem; }
+.news-note { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
