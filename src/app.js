@@ -1,8 +1,9 @@
-// Draws the board. All numbers come from Scoring and Dashboard, which read data/leads.js.
+// Draws the board. All numbers come from Scoring and Dashboard, which read the leads loaded from Airtable.
 (function () {
   'use strict';
 
-  const data = window.LEADS_DATA;
+  const meta = window.LEADS_META;
+  let data = null; // company, as_of and the leads, set once Airtable has answered
   const Scoring = window.Scoring;
   const Dashboard = window.Dashboard;
 
@@ -49,7 +50,7 @@
     Dashboard.scoreRules().forEach((line) => list.appendChild(el('li', '', line)));
   }
 
-  const fullQueue = Scoring.buildQueue(data.leads, data.as_of);
+  let fullQueue = [];
   const filters = { source: 'all', stage: 'all', band: 'all', country: 'all', query: '' };
 
   function renderQueue() {
@@ -228,11 +229,32 @@
     });
   }
 
-  renderHeader();
-  renderKpis();
-  renderRules();
-  setupFilters();
-  renderQueue();
-  renderPipeline();
-  renderSources();
+  function showError(error) {
+    const notice = document.getElementById('load-error');
+    notice.textContent = `Could not load the leads. ${error.message}`;
+    notice.hidden = false;
+    document.getElementById('count').textContent = 'No leads loaded.';
+  }
+
+  async function start() {
+    document.getElementById('company').textContent = meta.company;
+    document.getElementById('count').textContent = 'Loading leads from Airtable…';
+    try {
+      const leads = await window.AirtableSource.loadLeads(window.AIRTABLE_CONFIG);
+      data = { company: meta.company, as_of: meta.as_of, leads };
+      fullQueue = Scoring.buildQueue(data.leads, data.as_of);
+    } catch (error) {
+      showError(error);
+      return;
+    }
+    renderHeader();
+    renderKpis();
+    renderRules();
+    setupFilters();
+    renderQueue();
+    renderPipeline();
+    renderSources();
+  }
+
+  start();
 })();

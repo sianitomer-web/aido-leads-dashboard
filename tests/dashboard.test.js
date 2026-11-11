@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const data = require('../data/leads.js');
+const data = require('./fixtures/leads.js');
 const Scoring = require('../src/scoring.js');
 const Dashboard = require('../src/dashboard.js');
 
