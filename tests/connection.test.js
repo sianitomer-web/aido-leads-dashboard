@@ -121,3 +121,34 @@ test('Done 19: sample-leads.csv has the same columns and the same 60 leads as th
     assert.deepEqual(lead, fixture.leads[i]);
   });
 });
+
+// Done 20: what Airtable's CSV import does to the times must not change a single number.
+test('Done 20: an imported table with times like "2026-10-25 08:58" gives the same top numbers in any time zone', () => {
+  const Dashboard = require('../src/dashboard.js');
+  const imported = fixture.leads.map((lead, i) => {
+    const asText = (iso) => iso.replace('T', ' ').replace(/:00Z$/, '');
+    return { id: `rec${i}`, fields: { ...lead, created_at: asText(lead.created_at), last_contact_at: asText(lead.last_contact_at) } };
+  });
+  const expected = JSON.stringify(Dashboard.kpis(fixture.leads, fixture.as_of));
+  const before = process.env.TZ;
+  try {
+    for (const zone of ['UTC', 'Asia/Jerusalem', 'America/Los_Angeles', 'Australia/Sydney']) {
+      process.env.TZ = zone;
+      const leads = imported.map((record) => Airtable.toLead(record));
+      assert.deepEqual(leads, fixture.leads, `leads differ in ${zone}`);
+      assert.equal(JSON.stringify(Dashboard.kpis(leads, fixture.as_of)), expected, `numbers differ in ${zone}`);
+    }
+  } finally {
+    if (before === undefined) delete process.env.TZ; else process.env.TZ = before;
+  }
+});
+
+test('times: a date alone is read as midnight UTC, a time with a zone is left alone, an unreadable time is refused by name', () => {
+  const lead = { ...fixture.leads[0] };
+  const read = (created) => Airtable.toLead({ id: 'recT', fields: { ...lead, created_at: created } }).created_at;
+  assert.equal(read('2026-10-25'), '2026-10-25T00:00:00Z');
+  assert.equal(read('2026-10-25T08:58:00.000Z'), '2026-10-25T08:58:00.000Z');
+  assert.equal(read('2026-10-25T08:58:00+02:00'), '2026-10-25T08:58:00+02:00');
+  assert.equal(read('2026-10-25T08:58'), '2026-10-25T08:58:00Z');
+  assert.throws(() => read('yesterday morning'), /recT has a time that cannot be read: created_at\./);
+});

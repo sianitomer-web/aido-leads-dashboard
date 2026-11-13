@@ -90,7 +90,7 @@ Without this file the page shows a message and no leads, by design (Done 13). Th
 
 The board reads from a built-in base, so it works as soon as it opens. To read from your own base instead:
 
-1. Download [`sample-leads.csv`](sample-leads.csv) (60 fictional leads) and import it in Airtable: **Add or import, CSV file**. In the import preview keep `created_at` and `last_contact_at` as text or as date with time (UTC). The panel lists all nine columns and what each one holds.
+1. Download [`sample-leads.csv`](sample-leads.csv) (60 fictional leads) and import it in Airtable: **Add or import, CSV file**. In the import preview keep `created_at` and `last_contact_at` as text or as date with time (UTC). Airtable turns the file's `2026-10-06T19:09:00Z` into the text `2026-10-06 19:09`; the board reads a time without a zone as UTC, so the numbers stay the same. The panel lists all nine columns and what each one holds.
 2. Create a token in Airtable (**Builder hub, Personal access tokens**) with the scope `data.records:read` for that base only.
 3. Copy the Base ID (`app...`) and the Table ID (`tbl...`) from the address bar of your table.
 4. Open **Connection** at the top of the page, enter the three values and press **Save and reload**.
