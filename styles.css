@@ -18,8 +18,8 @@
   --cool-ink: #3f4a58;
 
   /* The Connection panel is light green so a reader finds it at once. Green is not a band colour. */
-  --connect-bg: #e1f5e6;
-  --connect-edge: #8fcf9f;
+  --connect-bg: #cdeed6;
+  --connect-edge: #5fb774;
 
   /* The only reds on the page. Used for Overdue markers and nothing else. */
   --overdue-bg: #fde7e7;
@@ -546,7 +546,7 @@ main { padding-block: 20px 40px; }
 .news-meta { color: var(--ink-soft); font-size: 13px; }
 .news-note { margin: 0; padding: 8px 16px 16px; color: var(--ink-soft); font-size: 13px; }
 
-.connection { margin: 16px 0; background: var(--connect-bg); border-color: var(--connect-edge); }
+.connection { margin: 16px 0; background: var(--connect-bg); border-color: var(--connect-edge); border-width: 2px; }
 .connection-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
 .connection-form { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
 .connection-actions { display: flex; gap: 10px; }
