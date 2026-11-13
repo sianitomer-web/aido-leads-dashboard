@@ -14,6 +14,7 @@ Double-click `index.html`. No server and no install, but it needs internet and a
 - A priority queue: open leads ranked by a rule-based score out of 100, with the reasons behind each rank. Overdue leads are marked in red, and red is used for nothing else.
 - A pipeline count per stage, and a source quality panel (share of leads that reached a consultation).
 - Filters, name search, and a per-lead breakdown of the four score parts.
+- A Connection panel: anyone can point the board at their own Airtable base (Base ID, Table ID, read-only token). The settings stay in that browser only.
 - A news panel: up to five recent headlines about immigration to Canada or Australia, as background for a call. It touches no score or number.
 
 ## How it is built
@@ -25,6 +26,8 @@ Double-click `index.html`. No server and no install, but it needs internet and a
 | `data/meta.js` | The company name and the `as_of` time that acts as "now" |
 | `scripts/fetch-news.js` | Fetches the headlines from the GNews API and writes `data/news.js`. Runs in Node, never in the browser |
 | `data/news.js` | The headlines the page shows. Written by that script and not kept in git |
+| `src/connection.js` | The Connection panel's settings: saved in the browser only, they override the built-in connection until forgotten |
+| `sample-leads.csv` | The same 60 fictional leads as a file, to import into your own Airtable table |
 | `src/airtable.js` | Reads the leads from the Airtable table: read-only GET requests, one per page of results |
 | `airtable-config.js` | The Airtable base, table and read-only token. Git ignores it (see below) |
 | `tests/fixtures/leads.js` | The 60 fictional leads as they are stored in Airtable, used by the tests |
@@ -41,7 +44,7 @@ Plain scripts only, no build step, no dependencies. The only request the page ma
 node --test
 ```
 
-Requires Node 20 or newer. 68 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
+Requires Node 20 or newer. 77 tests, including checks that red is used only for Overdue, that text contrast meets WCAG AA, and that the page makes no external requests.
 
 ## Done means, and the evidence
 
@@ -63,6 +66,9 @@ Requires Node 20 or newer. 68 tests, including checks that red is used only for 
 | 14 | News panel: at most five headlines from `data/news.js`, newest first, with the fetch time | `tests/news.test.js`; browser with real headlines |
 | 15 | No `data/news.js` or no headlines: one note, and the board still works | `tests/news.test.js`; browser on a copy without the file |
 | 16 | No news key in any file the browser receives | `tests/news.test.js` |
+| 17 | Saved settings win, and Forget brings the built-in connection back | `tests/connection.test.js`; browser with saved settings |
+| 18 | The saved token stays in this browser and goes only to `api.airtable.com` | `tests/connection.test.js` |
+| 19 | The listed columns are the required ones, and the sample CSV matches the built-in base | `tests/connection.test.js` |
 
 Also checked with real key presses: Tab reaches every control in a sensible order, and Enter or Space opens and closes a lead's score breakdown.
 
@@ -79,6 +85,17 @@ window.AIRTABLE_CONFIG = {
 ```
 
 Without this file the page shows a message and no leads, by design (Done 13). The token must never have write access. The browser still receives the token, because the page itself calls Airtable, so it is deliberately a read-only token for one base of fictional leads.
+
+## Try it with your own Airtable base
+
+The board reads from a built-in base, so it works as soon as it opens. To read from your own base instead:
+
+1. Download [`sample-leads.csv`](sample-leads.csv) (60 fictional leads) and import it in Airtable: **Add or import, CSV file**. In the import preview keep `created_at` and `last_contact_at` as text or as date with time (UTC). The panel lists all nine columns and what each one holds.
+2. Create a token in Airtable (**Builder hub, Personal access tokens**) with the scope `data.records:read` for that base only.
+3. Copy the Base ID (`app...`) and the Table ID (`tbl...`) from the address bar of your table.
+4. Open **Connection** at the top of the page, enter the three values and press **Save and reload**.
+
+The values stay in your browser's local storage and the token is never shown again. **Forget** removes them and brings the built-in connection back. If a column is missing or empty, the page names it.
 
 ## News panel
 

@@ -3,7 +3,19 @@
   'use strict';
 
   const API = 'https://api.airtable.com/v0';
-  const REQUIRED = ['id', 'name', 'country', 'source', 'created_at', 'last_contact_at', 'stage', 'completeness', 'engagement'];
+  // The columns a table needs, with what each one holds. The Connection panel lists them from here.
+  const COLUMNS = [
+    { name: 'id', type: 'text, one per lead (for example L001)' },
+    { name: 'name', type: 'text' },
+    { name: 'country', type: 'text or single select: Canada, Australia' },
+    { name: 'source', type: 'text or single select: Referral, Webinar, Google Search, Meta, Organic' },
+    { name: 'created_at', type: 'date with time (UTC), or text such as 2026-10-06T19:09:00Z' },
+    { name: 'last_contact_at', type: 'date with time (UTC), or text such as 2026-10-14T16:32:00Z' },
+    { name: 'stage', type: 'text or single select: New, Contacted, Consultation booked, Proposal sent, Won, Lost' },
+    { name: 'completeness', type: 'number from 0 to 100' },
+    { name: 'engagement', type: 'text or single select: none, replied, booked' },
+  ];
+  const REQUIRED = COLUMNS.map((column) => column.name);
 
   // One Airtable row becomes one lead. A row with an empty required cell is rejected, never guessed.
   function toLead(record) {
@@ -56,7 +68,7 @@
     return leads;
   }
 
-  const api = { loadLeads, toLead };
+  const api = { loadLeads, toLead, COLUMNS };
   if (typeof module === 'object' && module.exports) {
     module.exports = api;
   } else {

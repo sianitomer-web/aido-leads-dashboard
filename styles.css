@@ -541,3 +541,13 @@ main { padding-block: 20px 40px; }
 .news-link:hover { text-decoration: underline; }
 .news-meta { color: var(--ink-soft); font-size: 13px; }
 .news-note { margin: 0; padding: 8px 16px 16px; color: var(--ink-soft); font-size: 13px; }
+
+.connection { margin: 16px 0; }
+.connection-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.connection-form { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+.connection-actions { display: flex; gap: 10px; }
+.connection-error { margin: 0; color: var(--ink); font-size: 13px; }
+.connection-sub { margin: 4px 0 0; font-size: 14px; }
+.connection-columns { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 4px; }
+.connection-columns b { color: var(--ink); }
+.connection a { color: var(--accent-ink); font-weight: 600; }

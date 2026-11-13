@@ -3,6 +3,15 @@
   'use strict';
 
   const meta = window.LEADS_META;
+
+  // Settings saved in the Connection panel win over the built-in connection.
+  let storage = null;
+  try {
+    storage = window.localStorage;
+  } catch (error) {
+    storage = null;
+  }
+  const connection = window.Connection.resolve(window.AIRTABLE_CONFIG, storage);
   let data = null; // company, as_of and the leads, set once Airtable has answered
   const Scoring = window.Scoring;
   const Dashboard = window.Dashboard;
@@ -231,7 +240,8 @@
 
   function showError(error) {
     const notice = document.getElementById('load-error');
-    notice.textContent = `Could not load the leads. ${error.message}`;
+    const hint = connection.source === 'saved' ? ' You are using your saved connection: open Connection to change it or forget it.' : '';
+    notice.textContent = `Could not load the leads. ${error.message}${hint}`;
     notice.hidden = false;
     document.getElementById('count').textContent = 'No leads loaded.';
   }
@@ -260,12 +270,47 @@
     note.textContent = `Fetched ${news.fetched_at.slice(0, 16).replace('T', ' ')} UTC`;
   }
 
+  // The Connection panel: says which base is in use, lists the columns a table needs, saves or forgets the settings.
+  function setupConnection() {
+    document.getElementById('connection-status').textContent =
+      connection.source === 'saved'
+        ? `Using your saved connection (base ${connection.config.baseId}).`
+        : 'Using the built-in connection.';
+    const list = document.getElementById('connection-columns');
+    window.AirtableSource.COLUMNS.forEach((column) => {
+      const item = el('li', '');
+      item.appendChild(el('b', '', column.name));
+      item.appendChild(document.createTextNode(`: ${column.type}`));
+      list.appendChild(item);
+    });
+    const problem = document.getElementById('connection-error');
+    document.getElementById('connection-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      try {
+        if (!storage) throw new Error('This browser does not allow saving settings.');
+        window.Connection.save(storage, {
+          baseId: document.getElementById('c-base').value,
+          tableId: document.getElementById('c-table').value,
+          token: document.getElementById('c-token').value,
+        });
+        window.location.reload();
+      } catch (error) {
+        problem.textContent = error.message;
+      }
+    });
+    document.getElementById('c-forget').addEventListener('click', () => {
+      window.Connection.forget(storage);
+      window.location.reload();
+    });
+  }
+
   async function start() {
+    setupConnection();
     renderNews();
     document.getElementById('company').textContent = meta.company;
     document.getElementById('count').textContent = 'Loading leads from Airtable…';
     try {
-      const leads = await window.AirtableSource.loadLeads(window.AIRTABLE_CONFIG);
+      const leads = await window.AirtableSource.loadLeads(connection.config);
       data = { company: meta.company, as_of: meta.as_of, leads };
       fullQueue = Scoring.buildQueue(data.leads, data.as_of);
     } catch (error) {

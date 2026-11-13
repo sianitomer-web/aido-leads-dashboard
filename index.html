@@ -22,6 +22,37 @@
 
   <main class="wrap">
     <p id="load-error" class="notice" role="alert" hidden></p>
+    <section class="panel connection" aria-labelledby="connection-title">
+      <details class="how">
+        <summary id="connection-title">Connection</summary>
+        <div class="connection-body">
+          <p id="connection-status" class="hint" aria-live="polite"></p>
+          <p class="hint">Point the board at your own Airtable table. What you enter stays in this browser only.</p>
+          <form id="connection-form" class="connection-form" autocomplete="off">
+            <div class="field">
+              <label for="c-base">Base ID</label>
+              <input id="c-base" name="base" type="text" placeholder="appXXXXXXXXXXXXXX" spellcheck="false">
+            </div>
+            <div class="field">
+              <label for="c-table">Table ID</label>
+              <input id="c-table" name="table" type="text" placeholder="tblXXXXXXXXXXXXXX" spellcheck="false">
+            </div>
+            <div class="field">
+              <label for="c-token">Read-only token</label>
+              <input id="c-token" name="token" type="password" placeholder="pat..." autocomplete="off" spellcheck="false">
+            </div>
+            <div class="connection-actions">
+              <button type="submit" class="clear">Save and reload</button>
+              <button type="button" id="c-forget" class="clear">Forget</button>
+            </div>
+            <p id="connection-error" class="connection-error" role="alert"></p>
+          </form>
+          <h3 class="connection-sub">The table needs these columns</h3>
+          <ul id="connection-columns" class="connection-columns"></ul>
+          <p class="hint">No table yet? <a href="sample-leads.csv" download>Download sample-leads.csv</a> (60 fictional leads), then in Airtable choose Add or import, CSV file.</p>
+        </div>
+      </details>
+    </section>
     <h2 class="sr-only">Today at a glance</h2>
     <ul class="kpis">
       <li class="kpi">
@@ -132,6 +163,7 @@
   <script src="data/meta.js"></script>
   <script src="airtable-config.js"></script>
   <script src="src/airtable.js"></script>
+  <script src="src/connection.js"></script>
   <script src="data/news.js"></script>
   <script src="src/scoring.js"></script>
   <script src="src/dashboard.js"></script>
