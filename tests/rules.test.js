@@ -156,6 +156,7 @@ test('text and background pairs meet WCAG AA contrast', () => {
     ['--hot-ink', '--hot-bg'], ['--warm-ink', '--warm-bg'], ['--cool-ink', '--cool-bg'],
     ['--overdue-ink', '--overdue-bg'], ['--overdue-ink', '--surface'],
     ['--on-accent', '--accent'],
+    ['--ink', '--connect-bg'], ['--ink-soft', '--connect-bg'], ['--accent-ink', '--connect-bg'],
   ];
   for (const [fg, bg] of pairs) {
     assert.ok(vars[fg] && vars[bg], `${fg} and ${bg} are defined`);
