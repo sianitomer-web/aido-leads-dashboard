@@ -40,7 +40,7 @@ jobs:
           test -n "$AIRTABLE_TOKEN" || { echo "The secret AIRTABLE_TOKEN is not set."; exit 1; }
           test -n "$GNEWS_API_KEY" || { echo "The secret GNEWS_API_KEY is not set."; exit 1; }
           mkdir _site
-          cp -r index.html styles.css src data _site/
+          cp -r index.html styles.css sample-leads.csv src data _site/
           cat > _site/airtable-config.js <<EOF
           window.AIRTABLE_CONFIG = {
             token: "${AIRTABLE_TOKEN}",

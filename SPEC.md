@@ -28,6 +28,8 @@ The leads are the rows of the table `Leads` in the Airtable base "Harbor Leads",
 
 The news panel is the one part not about the leads: it shows real, public headlines. A scheduled job on GitHub fetches them from the GNews API with a free key kept as a repository secret, and publishes them as `data/news.js`, a script like the other data files. The page itself never calls GNews, so the key never reaches the browser (the browser cannot call GNews anyway: GNews does not allow other websites to read its answers). The headlines are refreshed every six hours, and the free plan already delays articles by about twelve hours. No number or score depends on them.
 
+Anyone can point the board at their own Airtable base with the Connection panel (see Features). The settings they enter are kept in that browser only and override the built-in connection until they are forgotten. A sample file, `sample-leads.csv`, holds the same 60 fictional leads as the built-in base, so a table with the right columns is one import away.
+
 Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked).
 
 ## Definitions
@@ -75,6 +77,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 - Filter the queue by source, stage, band and country (one value each, all of them must match), and search it by name (any part of the name, ignoring case and accents). Filters narrow the queue only: the top four numbers and the pipeline do not change, and each lead keeps its rank from the full queue. If nothing matches, the page says so.
 - Open a lead to see its score broken into the four parts, each shown as points out of its maximum.
 - News panel: up to five of the newest headlines about immigration to Canada or Australia, each with its source and date and a link that opens the article in a new tab. It is background reading for a call. It never changes a score, a rank or a number about the leads. The panel says when the headlines were last fetched.
+- Connection panel: a panel that opens from the top of the page lets anyone point the board at their own Airtable base by entering a Base ID, a Table ID and a read-only token. It lists the nine columns the table needs, with their types, and links to `sample-leads.csv` for a quick import into Airtable. Saved settings stay in this browser only (local storage), the token is never shown again after it is saved, and a Forget button removes all three. With nothing saved, the board uses the built-in connection and works as before.
 - Marketing panel: for each source, the number of leads and the share that reached a consultation. "Reached a consultation" means the lead is in stage Consultation booked, Proposal sent or Won. All leads of the source count, closed ones included. The share is a whole percent; sources are listed highest share first, then most leads. A lead that reached a consultation and was later marked Lost is not counted, because the data has no stage history.
 
 **Later**
@@ -104,3 +107,6 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 14. The news panel shows at most five headlines from `data/news.js`, newest first, each with its source, its date and a link to the article, and says when they were fetched. No score, rank or top number changes because of it.
 15. If `data/news.js` is missing or holds no headlines, the panel shows one short note and the rest of the board still works. The board never waits for the news.
 16. No API key for the news appears in any file the browser receives: not in the page files and not in `data/news.js`.
+17. Settings saved in the Connection panel are used the next time the board loads, and Forget returns the board to the built-in connection. With nothing saved, nothing changes.
+18. The saved token lives only in this browser's local storage, is never shown on the page after it is saved, and is sent only to `api.airtable.com`.
+19. The columns the panel lists are exactly the columns the board requires, and `sample-leads.csv` has the same columns and the same 60 fictional leads as the built-in base.
