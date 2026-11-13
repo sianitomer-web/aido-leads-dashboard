@@ -30,7 +30,7 @@ The news panel is the one part not about the leads: it shows real, public headli
 
 Anyone can point the board at their own Airtable base with the Connection panel (see Features). The settings they enter are kept in that browser only and override the built-in connection until they are forgotten. A sample file, `sample-leads.csv`, holds the same 60 fictional leads as the built-in base, so a table with the right columns is one import away.
 
-Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked).
+Each lead: `id`, `name` (fictional), `country` (Canada | Australia), `source` (Referral | Webinar | Google Search | Meta | Organic), `created_at`, `last_contact_at`, `stage` (New | Contacted | Consultation booked | Proposal sent | Won | Lost), `completeness` (0–100, share of intake form answered), `engagement` (none | replied | booked). All times are UTC. A time written without a zone, such as `2026-10-25 08:58` (what an Airtable CSV import produces) or a date alone, is read as UTC, so the same rows give the same numbers in every time zone. A time that cannot be read at all is refused with a message naming the row and the column.
 
 ## Definitions
 
@@ -110,3 +110,4 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 17. Settings saved in the Connection panel are used the next time the board loads, and Forget returns the board to the built-in connection. With nothing saved, nothing changes.
 18. The saved token lives only in this browser's local storage, is never shown on the page after it is saved, and is sent only to `api.airtable.com`.
 19. The columns the panel lists are exactly the columns the board requires, and `sample-leads.csv` has the same columns and the same 60 fictional leads as the built-in base.
+20. A table made by importing `sample-leads.csv` into Airtable, whose times become text like `2026-10-25 08:58`, gives the same four top numbers as the built-in base, in any time zone of the browser.
