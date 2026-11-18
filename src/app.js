@@ -92,7 +92,7 @@
       toggle.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-controls', detailId);
       who.appendChild(toggle);
-      who.appendChild(el('span', 'who-meta', `${lead.country} · ${lead.source}`));
+      who.appendChild(el('span', 'who-meta', `${lead.country} · ${lead.source} · ${Dashboard.addedLabel(lead.created_at, data.as_of)}`));
       const leadWrap = el('div', 'lead-wrap');
       leadWrap.appendChild(el('span', 'rank', String(rank)));
       leadWrap.appendChild(who);

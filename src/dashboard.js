@@ -147,5 +147,13 @@
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, scoreRules, kpiNotes, filterOptions, filterQueue, formatAsOf };
+  // "Added 18 Nov": the UTC day the lead was created. The year is added only
+  // when it differs from the year of as_of ("Added 30 Dec 2025").
+  function addedLabel(createdAt, asOf) {
+    const d = new Date(createdAt);
+    const year = d.getUTCFullYear() === new Date(asOf).getUTCFullYear() ? '' : ` ${d.getUTCFullYear()}`;
+    return `Added ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}${year}`;
+  }
+
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, scoreRules, kpiNotes, filterOptions, filterQueue, formatAsOf, addedLabel };
 });

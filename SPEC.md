@@ -69,7 +69,7 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 **Must**
 - As Maya, I see the board filled from the Airtable base, not from a file in the repository.
 - As Maya, I see four numbers at the top: open leads, new in the last 24h, overdue, hot.
-- As Maya, I see open leads in a queue ordered by score, highest first, each with its band and the reason it ranks there.
+- As Maya, I see open leads in a queue ordered by score, highest first, each with its band, the reason it ranks there, and the date it came in.
 - As Maya, I see overdue leads marked, with the hours since last contact.
 - As Maya, I see how many leads sit in each pipeline stage.
 
@@ -111,3 +111,4 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 18. The saved token lives only in this browser's local storage, is never shown on the page after it is saved, and is sent only to `api.airtable.com`.
 19. The columns the panel lists are exactly the columns the board requires, and `sample-leads.csv` has the same columns and the same 60 fictional leads as the built-in base.
 20. A table made by importing `sample-leads.csv` into Airtable, whose times become text like `2026-10-25 08:58`, gives the same four top numbers as the built-in base, in any time zone of the browser.
+21. Each queue row shows the day the lead was created, in UTC, as "Added" with the day and short month, for example "Added 18 Nov". The year is added only when it differs from the year of `as_of`, for example "Added 30 Dec 2025". The date changes no score, rank or number.
