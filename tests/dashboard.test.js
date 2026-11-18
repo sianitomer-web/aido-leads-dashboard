@@ -260,3 +260,18 @@ test('search finds a name written with an accent when typed without it', () => {
   assert.ok(found.every((q) => /tom[aá]s/i.test(q.lead.name)));
   assert.ok(Dashboard.filterQueue(queue, { ...ALL, query: 'TOMÁS' }).length === found.length);
 });
+
+// ---------- Date the lead came in (Done means 21) ----------
+
+test('each lead shows the UTC day it was created, with the year only when it differs from as_of', () => {
+  assert.equal(Dashboard.addedLabel('2026-11-18T07:19:43.000Z', '2026-11-04T09:00:00Z'), 'Added 18 Nov');
+  assert.equal(Dashboard.addedLabel('2026-10-06T23:30:00Z', '2026-11-04T09:00:00Z'), 'Added 6 Oct');
+  assert.equal(Dashboard.addedLabel('2025-12-30T10:00:00Z', '2026-11-04T09:00:00Z'), 'Added 30 Dec 2025');
+});
+
+test('every lead in the fixture gets a date label and the queue is unchanged by it', () => {
+  const before = Scoring.buildQueue(data.leads, AS_OF).map((item) => item.lead.id);
+  data.leads.forEach((lead) => assert.match(Dashboard.addedLabel(lead.created_at, AS_OF), /^Added \d{1,2} [A-Z][a-z]{2}( \d{4})?$/));
+  const after = Scoring.buildQueue(data.leads, AS_OF).map((item) => item.lead.id);
+  assert.deepEqual(after, before);
+});
