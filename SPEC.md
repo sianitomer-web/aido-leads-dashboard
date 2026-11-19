@@ -24,7 +24,7 @@ Browser only. Static site: HTML, CSS and JavaScript. No backend, no build step. 
 
 ## Data (mock)
 
-The leads are the rows of the table `Leads` in the Airtable base "Harbor Leads", read with a read-only token limited to that base. A small file, `data/meta.js`, holds the company name and an `as_of` timestamp that acts as "now". The dashboard never reads the real clock, so every number is reproducible for the same rows.
+The leads are the rows of the table `Leads` in the Airtable base "Harbor Leads", read with a read-only token limited to that base. A small file, `data/meta.js`, holds the company name and, optionally, an `as_of` timestamp that acts as "now". When `as_of` is present it is used as "now" and every number is reproducible for the same rows. When it is absent (the normal case), "now" is the browser's clock, read once when the page loads, so every number on one screen is measured from the same moment. The tests always pass an explicit `as_of`, so they never depend on the real clock.
 
 The news panel is the one part not about the leads: it shows real, public headlines. A scheduled job on GitHub fetches them from the GNews API with a free key kept as a repository secret, and publishes them as `data/news.js`, a script like the other data files. The page itself never calls GNews, so the key never reaches the browser (the browser cannot call GNews anyway: GNews does not allow other websites to read its answers). The headlines are refreshed every six hours, and the free plan already delays articles by about twelve hours. No number or score depends on them.
 
@@ -112,3 +112,4 @@ Their queue order is L1, L5, L3, L2, L4. L2 comes before L4 because it was conta
 19. The columns the panel lists are exactly the columns the board requires, and `sample-leads.csv` has the same columns and the same 60 fictional leads as the built-in base.
 20. A table made by importing `sample-leads.csv` into Airtable, whose times become text like `2026-10-25 08:58`, gives the same four top numbers as the built-in base, in any time zone of the browser.
 21. Each queue row shows the day the lead was created, in UTC, as "Added" with the day and short month, for example "Added 18 Nov". The year is added only when it differs from the year of `as_of`, for example "Added 30 Dec 2025". The date changes no score, rank or number.
+22. With no `as_of` in `data/meta.js`, "now" is the browser's clock at page load, read once: a lead last contacted 48 hours before that moment is Overdue and one created 23 hours before it is new in 24h. With `as_of` present, that value is "now" instead and the clock is not read.

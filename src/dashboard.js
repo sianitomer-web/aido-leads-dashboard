@@ -139,6 +139,12 @@
     });
   }
 
+  // "Now" for the whole board: `as_of` from meta when it is set, otherwise the clock,
+  // read once. The clock is passed in so tests never depend on the real time.
+  function resolveNow(meta, clock) {
+    return meta && meta.as_of ? meta.as_of : clock().toISOString();
+  }
+
   // "4 Nov 2026, 09:00 UTC", from the data's own timestamp.
   function formatAsOf(timestamp) {
     const d = new Date(timestamp);
@@ -155,5 +161,5 @@
     return `Added ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}${year}`;
   }
 
-  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, scoreRules, kpiNotes, filterOptions, filterQueue, formatAsOf, addedLabel };
+  return { STAGES, kpis, stageCounts, ageLabel, reasons, breakdownRows, sourceQuality, scoreRules, kpiNotes, filterOptions, filterQueue, resolveNow, formatAsOf, addedLabel };
 });

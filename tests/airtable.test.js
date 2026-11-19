@@ -92,7 +92,9 @@ test('a completeness of 0 is a valid value, not an empty cell', () => {
   assert.equal(Airtable.toLead(toRecord(lead, 0)).completeness, 0);
 });
 
-test('data/meta.js carries the same company and as_of as the stored leads', () => {
+// Spec change (Done means 22): meta.js no longer has to pin "now". `as_of` is optional there;
+// when present it must still be a valid timestamp.
+test('data/meta.js carries the same company as the stored leads, and as_of only if it is valid', () => {
   assert.equal(meta.company, fixture.company);
-  assert.equal(meta.as_of, fixture.as_of);
+  if (meta.as_of !== undefined) assert.ok(!Number.isNaN(Date.parse(meta.as_of)), 'as_of is a valid timestamp');
 });

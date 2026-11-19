@@ -1,8 +1,8 @@
-// The company name and the "now" time of the dashboard. The leads themselves come from Airtable.
-// `as_of` is "now" for the whole dashboard: nothing reads the real clock.
+// The company name. The leads themselves come from Airtable.
+// "Now" is the browser's clock, read once when the page loads. To pin the whole dashboard
+// to a fixed moment (a demo or a screenshot), add `as_of: "2026-11-04T09:00:00Z"` below.
 (function (root) {
   const meta = {
-    as_of: "2026-11-04T09:00:00Z",
     company: "Harbor Migration"
   };
   if (typeof module === 'object' && module.exports) {

@@ -6,6 +6,28 @@ const Dashboard = require('../src/dashboard.js');
 
 const AS_OF = data.as_of;
 
+// Done means 22: without `as_of`, "now" is the clock, read once; with `as_of`, the clock is not read.
+test('with no as_of, "now" is the clock, read once; with as_of, the clock is not read', () => {
+  let reads = 0;
+  const clock = () => { reads += 1; return new Date('2026-11-19T10:00:00Z'); };
+  assert.equal(Dashboard.resolveNow({ company: 'X' }, clock), '2026-11-19T10:00:00.000Z');
+  assert.equal(reads, 1);
+  assert.equal(Dashboard.resolveNow({ company: 'X', as_of: AS_OF }, clock), AS_OF);
+  assert.equal(reads, 1, 'the clock is not read when as_of is set');
+});
+
+test('measured from the clock, 48h since contact is Overdue and a lead created 23h ago is new', () => {
+  const now = Dashboard.resolveNow({}, () => new Date('2026-11-19T10:00:00Z'));
+  const base = { source: 'Referral', completeness: 50, engagement: 'none', stage: 'Contacted', country: 'Canada' };
+  const leads = [
+    { ...base, id: 'A', name: 'A', created_at: '2026-11-10T10:00:00Z', last_contact_at: '2026-11-17T10:00:00Z' },
+    { ...base, id: 'B', name: 'B', created_at: '2026-11-18T11:00:00Z', last_contact_at: '2026-11-18T11:00:00Z' }
+  ];
+  const k = Dashboard.kpis(leads, now);
+  assert.equal(k.overdue, 1);
+  assert.equal(k.newToday, 1);
+});
+
 // Done means 4: the four top numbers equal counts taken directly from the data.
 test('the four top numbers equal counts taken directly from the data', () => {
   const k = Dashboard.kpis(data.leads, AS_OF);
