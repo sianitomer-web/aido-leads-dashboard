@@ -33,7 +33,7 @@ Close it with a commit that says `Fixes #<number>`.
 ## Project rules
 
 - No external requests from the browser except the read-only call to the Airtable API that loads the leads: no CDN, no web fonts, no analytics. Plain scripts only, so the page also works when opened from disk.
-- All numbers on screen are computed from the leads loaded from Airtable. The dashboard never reads the real clock; "now" is `as_of` in `data/meta.js`.
+- All numbers on screen are computed from the leads loaded from Airtable. "Now" is `as_of` in `data/meta.js` when it is set; otherwise it is the browser's clock, read once when the page loads. Tests always pass an explicit `as_of` and never depend on the real clock.
 - Red marks Overdue leads only.
 - Mock data only for the leads: no real people, companies or contact details, and the Airtable base holds fictional leads only. The news panel is the one exception: it shows real public headlines, and no score or number depends on it.
 - A token that a user types into the Connection panel stays in that user's browser (local storage). It is never logged, never shown again after saving, and never sent anywhere but `api.airtable.com`.
