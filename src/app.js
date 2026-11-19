@@ -311,7 +311,7 @@
     document.getElementById('count').textContent = 'Loading leads from Airtable…';
     try {
       const leads = await window.AirtableSource.loadLeads(connection.config);
-      data = { company: meta.company, as_of: meta.as_of, leads };
+      data = { company: meta.company, as_of: Dashboard.resolveNow(meta, () => new Date()), leads };
       fullQueue = Scoring.buildQueue(data.leads, data.as_of);
     } catch (error) {
       showError(error);
